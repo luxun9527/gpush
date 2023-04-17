@@ -1,0 +1,18 @@
+syntax = "proto3";
+package order;
+option go_package = "./proto;proxy";
+
+
+service Proxy {
+  //后端调用次接口推送数据
+  rpc PushData(Data) returns(Empty);
+  //api调用此接口获取推送的数据
+  rpc PullData(Empty) returns(stream Data);
+
+}
+message Empty{}
+message Data{
+  string uid =1;
+  string topic=2;
+  bytes data=3;
+}

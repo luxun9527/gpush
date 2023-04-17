@@ -1,0 +1,7 @@
+.vscode
+
+temp
+.idea
+./bin
+./cmd/ws/bin
+
