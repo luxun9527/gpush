@@ -23,13 +23,20 @@ var (
 	SendCount    atomic.Int64
 )
 
+type RoomType uint8
+
+const (
+	Private RoomType = iota + 1
+	Public
+)
+
 type HandlerFunc func([]byte, *Connection)
 type Connection struct {
 	net.Conn
 	ID          int64
 	write       chan []byte
 	lock        sync.RWMutex
-	subbedRooms map[string]struct{}
+	subbedRooms map[string]RoomType
 	isClosed    bool
 	ip          string
 	handlerFunc HandlerFunc
@@ -107,7 +114,7 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 		ip:            conn.RemoteAddr().String(),
 		ID:            ID,
 		write:         make(chan []byte, 50),
-		subbedRooms:   make(map[string]struct{}, 5),
+		subbedRooms:   make(map[string]RoomType, 5),
 		handlerFunc:   f,
 		writeRate:     time.NewTicker(time.Millisecond * time.Duration(global.Config.Connection.WriteRate)),
 		readBuf:       bytes.NewBuffer(make([]byte, 0, 100)),
@@ -179,9 +186,8 @@ func (conn *Connection) WriteLoop() {
 func (conn *Connection) Close() {
 
 	conn.closeFunc.Do(func() {
-		CM.removeEpollerConn(conn.ID)
+		CM.LevelAll(conn)
 		conn.Conn.Close()
-		conn.levelAll()
 		conn.isClosed = true
 	})
 
@@ -194,26 +200,22 @@ func (conn *Connection) isSubbed(roomID string) bool {
 	conn.lock.RUnlock()
 	return ok
 }
-func (conn *Connection) subRoom(roomID string) {
+func (conn *Connection) subRoom(roomID string, roomType RoomType) {
 	conn.lock.Lock()
-	conn.subbedRooms[roomID] = struct{}{}
+	conn.subbedRooms[roomID] = roomType
 	conn.lock.Unlock()
 }
-func (conn *Connection) unSubRoom(roomID string) {
+func (conn *Connection) UnSubRoom(roomID string) {
+	conn.lock.Lock()
+	delete(conn.subbedRooms, roomID)
+	conn.lock.Unlock()
+}
+func (conn *Connection) unSubAll(roomID string) {
 	conn.lock.Lock()
 	delete(conn.subbedRooms, roomID)
 	conn.lock.Unlock()
 }
 
-// LevelAll 只有断开才会执行
-func (conn *Connection) levelAll() {
-	CM.DelConnection(conn)
-	conn.lock.RLock()
-	defer conn.lock.RUnlock()
-	for room, _ := range conn.subbedRooms {
-		CM.LeaveRoom(room, conn)
-	}
-}
 func (conn *Connection) KeepAlive() {
 	conn.lastHeartbeat = time.Now().Add(time.Millisecond * time.Duration(global.Config.Connection.TimeOut))
 }

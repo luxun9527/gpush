@@ -10,6 +10,6 @@ type SubPublic struct {
 }
 
 func (SubPublic) Handle(r request.Message, conn *manager.Connection) {
-	manager.CM.JoinRoom(r.Topic, conn)
+	manager.CM.JoinPublicRoom(r.Topic, conn)
 	conn.Send(response.SubSuccess)
 }

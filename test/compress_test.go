@@ -4,12 +4,12 @@ import (
 	"compress/flate"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
+	"github.com/mofei1/gpush/internal/socket/model"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"testing"
-	"ws/internal/socket/model"
 )
 
 func TestCompressServer(t *testing.T) {
@@ -246,7 +246,4 @@ func TestFlateServer1(t *testing.T) {
 
 		}()
 	}
-}
-func TestCompressClient(t *testing.T) {
-
 }

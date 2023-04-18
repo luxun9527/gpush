@@ -11,5 +11,5 @@ type Login struct {
 func (Login) Handle(r request.Message, conn *manager.Connection) {
 	//todo 认证
 	conn.SetLoginStatus(true)
-
+	manager.CM.Login(conn)
 }

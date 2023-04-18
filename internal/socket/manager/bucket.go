@@ -39,7 +39,7 @@ func (b *Bucket) handleMessage(c chan PushJob) {
 }
 
 // AddLoggedConnection 添加登录的连接
-func (b *Bucket) AddLoggedConnection(conn *Connection) {
+func (b *Bucket) addLoggedConnection(conn *Connection) {
 	b.loggedLock.Lock()
 	defer b.loggedLock.Unlock()
 	c, ok := b.LoggedConn[conn.Uid]
@@ -51,7 +51,7 @@ func (b *Bucket) AddLoggedConnection(conn *Connection) {
 }
 
 // DeleteLoggedConnection 删除登录的连接
-func (b *Bucket) DeleteLoggedConnection(conn *Connection) {
+func (b *Bucket) deleteLoggedConnection(conn *Connection) {
 	b.loggedLock.Lock()
 	defer b.loggedLock.Unlock()
 	c, ok := b.LoggedConn[conn.Uid]
@@ -109,14 +109,14 @@ func (b *Bucket) AddConn(conn *Connection) {
 }
 
 // DelConn 删除连接
-func (b *Bucket) DelConn(conn *Connection) {
+func (b *Bucket) delConn(conn *Connection) {
 	b.id2ConnLock.Lock()
 	delete(b.id2Conn, conn.ID)
 	b.id2ConnLock.Unlock()
 }
 
-// JoinRoom 连接加入room
-func (b *Bucket) JoinRoom(roomID string, conn *Connection) {
+// joinPublicRoom 加入共有的房间
+func (b *Bucket) joinPublicRoom(roomID string, conn *Connection) {
 	b.roomsLock.Lock()
 	room, ok := b.rooms[roomID]
 	if !ok {
@@ -136,19 +136,19 @@ func (b *Bucket) GetConnection(id int64) (*Connection, bool) {
 }
 
 // LeaveRoom 离开room
-func (b *Bucket) LeaveRoom(roomID string, conn *Connection) {
+func (b *Bucket) leavePublicRoom(roomID string, conn *Connection) {
 	b.roomsLock.RLock()
 	room, ok := b.rooms[roomID]
 	b.roomsLock.RUnlock()
 	if !ok {
 		return
 	}
+	room.Leave(conn)
 	if room.Count() == 0 {
 		b.roomsLock.Lock()
 		delete(b.rooms, roomID)
 		b.roomsLock.Unlock()
 	}
-	room.Leave(conn)
 }
 
 //pushAll 推送给所有用户
