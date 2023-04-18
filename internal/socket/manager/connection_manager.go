@@ -120,11 +120,12 @@ func (c *ConnectionManager) PushAll(data []byte) {
 }
 
 // PushPerson 推送给所有
-func (c *ConnectionManager) PushPerson(uid string, data []byte) {
+func (c *ConnectionManager) PushPerson(uid, roomID string, data []byte) {
 	job := PushJob{
 		PushType: PushPerson,
 		uid:      uid,
 		data:     data,
+		roomID:   roomID,
 	}
 	c.dispatchChan <- job
 }

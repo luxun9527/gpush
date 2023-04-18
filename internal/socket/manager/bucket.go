@@ -181,12 +181,10 @@ func (b *Bucket) pushPerson(job PushJob) {
 	if !ok {
 		return
 	}
-	lc.Find(func(_ int, value interface{}) bool {
+	lc.Each(func(index int, value interface{}) {
 		c := value.(*Connection)
 		if ok := c.isSubbed(job.roomID); ok {
 			c.Send(job.data)
 		}
-		return true
 	})
-
 }

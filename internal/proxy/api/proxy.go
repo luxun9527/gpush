@@ -16,6 +16,11 @@ type ProxyApi struct {
 
 var SendCount atomic.Int64
 
+type SocketConnection struct {
+	req    pb.Proxy_PullDataServer
+	cancel context.CancelFunc
+}
+
 // PushData 后端调用次接口推送数据
 func (p *ProxyApi) PushData(c context.Context, d *pb.Data) (*pb.Empty, error) {
 	p.Data <- d
@@ -24,18 +29,25 @@ func (p *ProxyApi) PushData(c context.Context, d *pb.Data) (*pb.Empty, error) {
 
 // PullData api调用此接口获取推送的数据
 func (p *ProxyApi) PullData(e *pb.Empty, req pb.Proxy_PullDataServer) error {
-	p.reqConn.Store(req, struct{}{})
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	s := &SocketConnection{
+		req:    req,
+		cancel: cancelFunc,
+	}
+	p.reqConn.Store(s, struct{}{})
+	<-ctx.Done()
 	return nil
 }
 
 // PushSocketData 推送数据给socket
-func (p *ProxyApi) PushSocketData() error {
+func (p *ProxyApi) PushSocketData() {
 	go func() {
 		for data := range p.Data {
 			p.reqConn.Range(func(req, _ any) bool {
-				r := req.(pb.Proxy_PullDataServer)
-				if err := r.Send(data); err != nil {
+				conn := req.(*SocketConnection)
+				if err := conn.req.Send(data); err != nil {
 					log.Println("err", err)
+					conn.cancel()
 					p.reqConn.Delete(req)
 				}
 				return true
@@ -44,5 +56,4 @@ func (p *ProxyApi) PushSocketData() error {
 
 	}()
 
-	return nil
 }

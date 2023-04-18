@@ -51,6 +51,10 @@ var (
 		Code:    20002,
 		Message: "取消订阅成功",
 	}.EncodeMessage()
+	LoginSuccess = Response{
+		Code:    20003,
+		Message: "登录成功",
+	}.EncodeMessage()
 	LogoutSuccess = Response{
 		Code:    20003,
 		Message: "退出成功",
