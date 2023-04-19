@@ -21,7 +21,7 @@ func main() {
 		http.ListenAndServe("0.0.0.0:8899", nil)
 	}()
 	var addr string
-	flag.StringVar(&addr, "config", "config/ws/config.toml", "配置文件路径")
+	flag.StringVar(&addr, "config", "config/socket/config.toml", "配置文件路径")
 	flag.Parse()
 
 	r := gin.New()

@@ -125,11 +125,11 @@ func (b *Reader) GoBack() {
 
 //调整缓存数据区的位置，从零开始。
 func (b *Reader) adjustDataPos() {
-	if b.lastMessagePos == b.w {
-		return
-	}
+	//if b.lastMessagePos == b.w {
+	//	return
+	//}
 	n := copy(b.buf, b.buf[b.lastMessagePos:b.w])
-	b.r = 0
+	b.r = n
 	b.w = n
 	b.lastMessagePos = 0
 }

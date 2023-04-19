@@ -12,7 +12,7 @@ proxydir="$dir/cmd/proxy"
 cd $proxydir
 go build -o "$dir/bin/proxy"
 echo '开始执行'
-wsConfigDir="$dir/config/ws/config.toml"
+wsConfigDir="$dir/config/socket/config.toml"
 proxyConfigDir="$dir/config/proxy/config.toml"
 echo $wsConfigDir
 nohup "$dir/bin/proxy" --config="$proxyConfigDir"   &

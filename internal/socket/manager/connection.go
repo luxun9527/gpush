@@ -102,7 +102,7 @@ func (conn *Connection) ReadMessage() {
 			}
 		}
 		Received.Inc()
-		//conn.handlerFunc(frame.Payload, conn)
+		conn.handlerFunc(frame.Payload, conn)
 
 	}
 
