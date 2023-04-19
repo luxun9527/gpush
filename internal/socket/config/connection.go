@@ -5,4 +5,5 @@ type Connection struct {
 	TimeOut    int  `mapstructure:"timeOut"`
 	IsCompress bool `mapstructure:"isCompress"`
 	WriteBuf   int  `mapstructure:"writeBuf"`
+	ReadBuf    int  `mapstructure:"readBuf"`
 }

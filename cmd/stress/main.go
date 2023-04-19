@@ -22,19 +22,19 @@ func main() {
 		time.Sleep(time.Millisecond * 2)
 		go connect(url)
 	}
-	go func() {
-		for {
-			time.Sleep(time.Second * 1)
-			c := currentReceived.Load()
-
-			receivedPs := c - lastReceived.Load()
-
-			lastReceived = currentReceived
-
-			log.Printf("当前收到 %v 每秒收到 %v\n", c, receivedPs)
-		}
-
-	}()
+	//go func() {
+	//	for {
+	//		time.Sleep(time.Second * 1)
+	//		c := currentReceived.Load()
+	//
+	//		receivedPs := c - lastReceived.Load()
+	//
+	//		lastReceived = currentReceived
+	//
+	//		log.Printf("当前收到 %v 每秒收到 %v\n", c, receivedPs)
+	//	}
+	//
+	//}()
 	time.Sleep(time.Hour)
 }
 func connect(url string) {

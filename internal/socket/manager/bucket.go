@@ -97,7 +97,7 @@ func (b *Bucket) readMessage(fds chan int) {
 		if !ok {
 			continue
 		}
-		conn.Read(fd)
+		conn.ReadMessage()
 	}
 }
 

@@ -2,7 +2,6 @@ package manager
 
 import (
 	"bufio"
-	"bytes"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
 	"github.com/mofei1/gpush/internal/socket/global"
@@ -45,10 +44,10 @@ type Connection struct {
 	writeBuf  *bufio.Writer
 	closeFunc sync.Once
 	//读数据到这个buf中
-	readBuf       *bytes.Buffer
-	lastHeartbeat time.Time
-	isLogin       atomic.Bool
-	Uid           string
+	webSocketReader *tools.WebSocketReader
+	lastHeartbeat   time.Time
+	isLogin         atomic.Bool
+	Uid             string
 }
 
 func (conn *Connection) SetLoginStatus(status bool) {
@@ -67,43 +66,47 @@ func (conn *Connection) Send(data []byte) {
 
 }
 
-func (conn *Connection) Read(fd int) {
-	for {
-		buf := make([]byte, 100)
-		//考虑一次读多条和一次读不完一条的情况。
-		n, err := syscall.Read(fd, buf)
-		if err != nil {
-			//当读出错就返回
-			return
+func (conn *Connection) Read(data []byte) (n int, err error) {
+	n, err = syscall.Read(int(conn.ID), data)
+	if err != nil {
+		if err == syscall.EAGAIN {
+			return 0, io.EOF
 		}
-		//todo 自己实现解码websocket数据包，写到缓存并不是最好的选择。
-		conn.readBuf.Write(buf[:n])
-		//循环读
-		for {
-			frame, err := ws.ReadFrame(conn.readBuf)
-			if err != nil {
-				if err == io.ErrUnexpectedEOF {
-					conn.readBuf.Write(buf[:n])
-				}
-				break
-			}
-			if frame.Header.OpCode == ws.OpClose {
-				conn.Close()
-				return
-			}
-			frame = ws.UnmaskFrameInPlace(frame)
-			if global.Config.Connection.IsCompress {
-				frame, err = wsflate.DecompressFrame(frame)
-				if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func (conn *Connection) ReadMessage() {
+
+	//循环读
+	for {
+		frame, err := conn.webSocketReader.ReadFrame()
+		if err != nil {
+			if err == io.ErrUnexpectedEOF {
+				if err := conn.webSocketReader.Reset(); err != nil {
+					conn.Close()
 					return
 				}
 			}
-			//Received.Inc()
-			conn.handlerFunc(frame.Payload, conn)
-
+			break
 		}
+		if frame.Header.OpCode == ws.OpClose {
+			conn.Close()
+			return
+		}
+		frame = ws.UnmaskFrameInPlace(frame)
+		if global.Config.Connection.IsCompress {
+			frame, err = wsflate.DecompressFrame(frame)
+			if err != nil {
+				return
+			}
+		}
+		//Received.Inc()
+		conn.handlerFunc(frame.Payload, conn)
 
 	}
+
 }
 
 func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
@@ -117,11 +120,12 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 		subbedRooms:   make(map[string]RoomType, 5),
 		handlerFunc:   f,
 		writeRate:     time.NewTicker(time.Millisecond * time.Duration(global.Config.Connection.WriteRate)),
-		readBuf:       bytes.NewBuffer(make([]byte, 0, 100)),
 		lastHeartbeat: time.Now(),
+		writeBuf:      bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf),
 	}
 	//nc.writeBuf = bufio.NewWriterSize(nc, global.Config.Connection.WriteBuf)
-	nc.writeBuf = bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf)
+	buf := tools.NewReaderSize(nc, global.Config.Connection.ReadBuf)
+	nc.webSocketReader = tools.NewWebSocketReader(buf, global.Config.Connection.ReadBuf)
 	CM.AddConnection(nc)
 	if err := CM.addEpollerConn(ID); err != nil {
 		global.L.Error("add conn to epoller failed", zap.Error(err))

@@ -6,8 +6,8 @@ import (
 	"github.com/mofei1/gpush/internal/proxy/api"
 	"github.com/mofei1/gpush/internal/proxy/global"
 	pb "github.com/mofei1/gpush/proto"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"net/http"
 )
@@ -21,11 +21,11 @@ func InitGrpc() {
 	pb.RegisterProxyServer(s, t)
 	listener, err := net.Listen("tcp", global.Config.Server.PullPort)
 	if err != nil {
-		log.Panicf("init proxy grpc  failed %v", err)
+		global.L.Panic("tcp listen failed", zap.Error(err))
 	}
 	go func() {
 		if err := s.Serve(listener); err != nil {
-			log.Panicf("init proxy serve fialed err = %v", err.Error())
+			global.L.Panic("init grpc server failed ", zap.Error(err))
 		}
 	}()
 
@@ -36,12 +36,12 @@ func InitHttpServer() {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Panicf("dail proxy grpc serve fialed err = %v", err)
+		global.L.Panic("dail proxy grpc serve failed ", zap.Error(err))
 	}
 
 	gwmux := runtime.NewServeMux()
 	if err = pb.RegisterProxyHandler(context.Background(), gwmux, conn); err != nil {
-		log.Panicf("Failed to register gateway %v", err)
+		global.L.Panic("Failed to register gateway ", zap.Error(err))
 	}
 
 	gwServer := &http.Server{
@@ -50,7 +50,8 @@ func InitHttpServer() {
 	}
 	go func() {
 		if err := gwServer.ListenAndServe(); err != nil {
-			log.Panicf("init proxy http serve fialed err = %v", err)
+			global.L.Panic("init proxy http serve failed err", zap.Error(err))
+
 		}
 	}()
 

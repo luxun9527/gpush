@@ -2,7 +2,6 @@
 
 [server]
     port="0.0.0.0:9992"
-    timeOut=20000
 
 [bucket]
     BucketCount =512
@@ -17,7 +16,8 @@
    #是否压缩 使用defalte协议压缩
    IsCompress=false
    #写缓存的大小
-   writeBufSize=1024
+   WriteBuf=1024
+   ReadBuf=100
 [logger]
     Level ="debug"
     Stacktrace=true

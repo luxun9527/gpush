@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
+	"github.com/mofei1/gpush/internal/proxy/global"
 	pb "github.com/mofei1/gpush/proto"
-	"go.uber.org/atomic"
-	"log"
+	"go.uber.org/zap"
 	"sync"
 )
 
@@ -13,8 +13,6 @@ type ProxyApi struct {
 	Data    chan *pb.Data
 	reqConn sync.Map
 }
-
-var SendCount atomic.Int64
 
 type SocketConnection struct {
 	req    pb.Proxy_PullDataServer
@@ -46,7 +44,7 @@ func (p *ProxyApi) PushSocketData() {
 			p.reqConn.Range(func(req, _ any) bool {
 				conn := req.(*SocketConnection)
 				if err := conn.req.Send(data); err != nil {
-					log.Println("err", err)
+					global.L.Error("send message failed", zap.Error(err))
 					conn.cancel()
 					p.reqConn.Delete(req)
 				}

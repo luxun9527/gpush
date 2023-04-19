@@ -5,15 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mofei1/gpush/internal/socket/global"
 	"github.com/mofei1/gpush/internal/socket/initialize"
-	"github.com/mofei1/gpush/internal/socket/manager"
 	"github.com/mofei1/gpush/internal/socket/pull"
 	"github.com/mofei1/gpush/internal/socket/service"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
-	"log"
 	"net/http"
 	_ "net/http/pprof"
-	"time"
 )
 
 func main() {
@@ -31,16 +28,16 @@ func main() {
 	pull.InitProxyConn()
 	r.GET("/ws", service.Connect)
 	r.GET("/stats", service.Stats)
-	go func() {
-		for {
-			time.Sleep(time.Second)
-			last := manager.LastReceived.Load()
-			current := manager.Received.Load()
-			perSecond := current - last
-			manager.LastReceived = manager.Received
-			log.Printf("总共收到 %v 平均每秒收到%v 跳过 %v sendcount %v,从proxy收到 %v", current, perSecond, manager.Ship.Load(), manager.SendCount.Load(), pull.Received.Load())
-		}
-	}()
+	//go func() {
+	//	for {
+	//		time.Sleep(time.Second)
+	//		last := manager.LastReceived.Load()
+	//		current := manager.Received.Load()
+	//		perSecond := current - last
+	//		manager.LastReceived = manager.Received
+	//		log.Printf("总共收到 %v 平均每秒收到%v 跳过 %v sendcount %v,从proxy收到 %v", current, perSecond, manager.Ship.Load(), manager.SendCount.Load(), pull.Received.Load())
+	//	}
+	//}()
 	global.L.Info("load config path success", zap.Any("detail", global.Config))
 	r.Run(global.Config.Server.Port)
 
