@@ -9,7 +9,7 @@ type Bucket struct {
 	id          int32
 	id2Conn     map[int64]*Connection //map[连接ID]*Connection 连接列表(key=连接唯一ID)
 	rooms       map[string]*Room      //map[string]*Room 房间列表 。
-	messageChan []chan PushJob
+	messageChan []chan *PushJob
 	id2ConnLock sync.RWMutex
 	roomsLock   sync.RWMutex
 	notify      []chan int
@@ -25,7 +25,7 @@ func (b *Bucket) Count() int {
 }
 
 //处理收到的数据
-func (b *Bucket) handleMessage(c chan PushJob) {
+func (b *Bucket) handleMessage(c chan *PushJob) {
 	for job := range c {
 		switch job.PushType {
 		case PushAll:
@@ -71,9 +71,9 @@ func NewBucket(id int32) *Bucket {
 		id:         id,
 		id2Conn:    make(map[int64]*Connection, 200),
 		rooms:      make(map[string]*Room, 100),
-		LoggedConn: make(map[string]*sll.List, 1000),
+		LoggedConn: make(map[string]*sll.List, 200),
 	}
-	messageChan := make([]chan PushJob, 20)
+	messageChan := make([]chan *PushJob, 20)
 	cs := make([]chan int, 10)
 	for i := 0; i < len(cs); i++ {
 		cs[i] = make(chan int, 10)
@@ -81,7 +81,7 @@ func NewBucket(id int32) *Bucket {
 	}
 	bucket.notify = cs
 	for i := 0; i < len(messageChan); i++ {
-		messageChan[i] = make(chan PushJob, 1000)
+		messageChan[i] = make(chan *PushJob, 500)
 		go bucket.handleMessage(messageChan[i])
 	}
 	bucket.messageChan = messageChan
@@ -152,7 +152,7 @@ func (b *Bucket) leavePublicRoom(roomID string, conn *Connection) {
 }
 
 //pushAll 推送给所有用户
-func (b *Bucket) pushAll(job PushJob) {
+func (b *Bucket) pushAll(job *PushJob) {
 	b.id2ConnLock.RLock()
 	defer b.id2ConnLock.RUnlock()
 	for _, conn := range b.id2Conn {
@@ -162,7 +162,7 @@ func (b *Bucket) pushAll(job PushJob) {
 }
 
 //pushRoom 推送给指定的订阅
-func (b *Bucket) pushRoom(job PushJob) {
+func (b *Bucket) pushRoom(job *PushJob) {
 	b.roomsLock.RLock()
 	room, ok := b.rooms[job.roomID]
 	b.roomsLock.RUnlock()
@@ -173,7 +173,7 @@ func (b *Bucket) pushRoom(job PushJob) {
 }
 
 //pushPerson 推送给个人
-func (b *Bucket) pushPerson(job PushJob) {
+func (b *Bucket) pushPerson(job *PushJob) {
 	// 这个锁的粒度比较大。
 	b.loggedLock.RLock()
 	defer b.loggedLock.RUnlock()

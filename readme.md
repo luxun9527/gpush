@@ -1,5 +1,7 @@
 # ws推送组件
 
+![image-20230423222249615](https://i.328888.xyz/2023/04/23/iS36no.jpeg)
+
 ## 实现功能
 
 ### 推送数据到公共频道
@@ -16,11 +18,11 @@
 {
     "code":1,
     "topic":"test",
-    "data":object
+    "data":"any"
 }
 ```
 
-code 表示操作的类型
+code:表示操作的类型
 
 - 1订阅公共频道。
 - 2取消订阅公共频道。
@@ -29,27 +31,45 @@ code 表示操作的类型
 - 5订阅私有频道，需要登录。
 - 6取消订阅私有频道，需要登录。
 
-topic 你订阅的频道的名称
+topic:你订阅的频道的名称
 
-data object类型，登录的时候你可以使用这个字段传你的token
+data:任意类型，保留字段，如果是登录操作你可以用这个字段传你的登录凭证信息。
 
 ## 后台推送
 
 后台推送提供http接口和grpc接口
 
+**http 接口**：使用grpc-gateway 提供
+
+POST /v1/pushData
+
+json格式数据
+
 ```json
 {
     "uid":"123456",
     "topic":"test",
-    "data":[97,98,99]
+    "data":"5pWw5o2u"
 }
 ```
 
-uid    :  用户id当推送给私有频道指定用户的id，否则为空
+uid    :  用户id当推送给私有频道指定用户的id，否则为空。
 
-topic : 频道的名称，当你想推送给所有的时候为空
+topic : 频道的名称，当你想推送给所有的时候为空。
 
-data : 具体的推送的内容
+data : 具体的推送的内容，推送的数据要经过base64编码
+
+**grpc接口** github.com/mofei1/gpush/proto
+
+protobuf 格式
+
+```protobuf
+message Data{
+  string uid =1;
+  string topic=2;
+  bytes data=3;
+}
+```
 
 ## ws推送优化
 
@@ -145,47 +165,13 @@ func Connect(c *gin.Context) {
 }
 ```
 
-解决方法，使用syscall.Read，将websocket数据包读出后再处理，而不是阻塞。
-
-```go
-for {
-    buf := make([]byte, 100)
-    //考虑一次读多条和一次读不完一条的情况。
-    n, err := syscall.Read(fd, buf)
-    if err != nil {
-       //当读出错就返回
-       return
-   }
-    //写到缓存区中
-    conn.readBuf.Write(buf[:n])
-    //循环读
-    for {
-        //todo 这个地方可以优化，自己实现websocket包的解码，长度不够就写回去不是最佳选择。
-       frame, err := ws.ReadFrame(conn.readBuf)
-       if err != nil {
-          if err == io.ErrUnexpectedEOF {
-             //长度没达到就写回去，而不是阻塞
-             conn.readBuf.Write(buf[:n])
-         }
-          break
-      }
-       if frame.Header.OpCode == ws.OpClose {
-          conn.Close()
-          return
-      }
-       frame = ws.UnmaskFrameInPlace(frame)
-     
-       log.Println(string(frame.Payload))
-   }
-
-}
-```
+**解决方法**：将数据读出来，如果io.ReadFull如果没有读完的，读出多少就回退多少，这里需要自己diy bufio.Reader 和 github.com/gobwas/ws"的ReadFrame
 
 ### 2、使用写缓存
 
 如果在小包特别多得情况下，直接发送会有很多系统调用,gmp模型，每一次系统调用go都会有一次调度 会消耗cpu。在实时性要求不高的情况下，我们可以批量定时写入。
 
-得益于github.com/gobwas/ws 提供的非常灵活的用法，我们可以暂时将我们要写的数据转为websocket数据包缓存起来。批量定时写入
+得益于github.com/gobwas/ws 提供的非常灵活的用法，我们可以暂时将我们要写的数据转为websocket数据包缓存起来， 批量定时写入。此外提前encode websocket数据包，也可以避免每一个连接都去encode 一遍websocket数据包,提高效率。
 
 ```go
  type Message struct {

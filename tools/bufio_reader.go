@@ -215,6 +215,7 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 		if b.err != nil {
 			return 0, b.readErr()
 		}
+		//取消len大于buf的判断。
 		//if len(p) >= len(b.buf) {
 		//	// Large read, empty buffer.
 		//	// Read directly into p to avoid copy.

@@ -46,7 +46,7 @@ func (pushJob PushJob) getCid() int32 {
 
 type ConnectionManager struct {
 	buckets      []*Bucket
-	dispatchChan chan PushJob // 待分发消息队列
+	dispatchChan chan *PushJob // 待分发消息队列
 	Epoller      []*Epoller
 }
 
@@ -60,7 +60,7 @@ func GetConnectionInfo() int {
 func NewConnectionManager() {
 	CM = &ConnectionManager{
 		buckets:      make([]*Bucket, global.Config.Bucket.BucketCount),
-		dispatchChan: make(chan PushJob, global.Config.Bucket.DispatchChanSize),
+		dispatchChan: make(chan *PushJob, global.Config.Bucket.DispatchChanSize),
 	}
 	for i, _ := range CM.buckets {
 		//初始化所有bucket
@@ -101,7 +101,7 @@ func (c *ConnectionManager) dispatchToBucket() {
 
 // PushRoom 推送到room
 func (c *ConnectionManager) PushRoom(room string, data []byte) {
-	job := PushJob{
+	job := &PushJob{
 		PushType: PushRoom,
 		roomID:   room,
 		data:     data,
@@ -112,7 +112,7 @@ func (c *ConnectionManager) PushRoom(room string, data []byte) {
 
 // PushAll 推送给所有
 func (c *ConnectionManager) PushAll(data []byte) {
-	job := PushJob{
+	job := &PushJob{
 		PushType: PushAll,
 		data:     data,
 	}
@@ -121,7 +121,7 @@ func (c *ConnectionManager) PushAll(data []byte) {
 
 // PushPerson 推送给所有
 func (c *ConnectionManager) PushPerson(uid, roomID string, data []byte) {
-	job := PushJob{
+	job := &PushJob{
 		PushType: PushPerson,
 		uid:      uid,
 		data:     data,

@@ -9,6 +9,7 @@ import (
 )
 
 var currentReceived, lastReceived atomic.Int64
+var hasSend atomic.Int64
 
 func main() {
 	var url string
@@ -22,19 +23,13 @@ func main() {
 		time.Sleep(time.Millisecond * 2)
 		go connect(url)
 	}
-	//go func() {
-	//	for {
-	//		time.Sleep(time.Second * 1)
-	//		c := currentReceived.Load()
-	//
-	//		receivedPs := c - lastReceived.Load()
-	//
-	//		lastReceived = currentReceived
-	//
-	//		log.Printf("当前收到 %v 每秒收到 %v\n", c, receivedPs)
-	//	}
-	//
-	//}()
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			log.Printf("发送了多少条 %v\n", hasSend.Load())
+		}
+
+	}()
 	time.Sleep(time.Hour)
 }
 func connect(url string) {
@@ -46,6 +41,9 @@ func connect(url string) {
 		log.Printf("connect failed err = %v", err.Error())
 		return
 	}
+	SendMessage(conn)
+}
+func ReadMessage(conn *websocket.Conn) {
 	//conn.EnableWriteCompression(true)
 	//conn.SetCompressionLevel(9)
 	conn.WriteJSON(map[string]interface{}{"code": 1, "topic": "test"})
@@ -67,4 +65,20 @@ func connect(url string) {
 		currentReceived.Inc()
 
 	}
+}
+func SendMessage(conn *websocket.Conn) {
+	for i := 0; i < 1000; i++ {
+		time.Sleep(time.Millisecond * 100)
+		hasSend.Inc()
+		conn.WriteMessage(websocket.TextMessage, []byte("testaestlasjdfljfalkjsdlfjalsdjfl"))
+	}
+	//for {
+	//	_, p, err := conn.ReadMessage()
+	//	if err != nil {
+	//		log.Println(err)
+	//		return
+	//	}
+	//	log.Println(string(p))
+	//}
+
 }
