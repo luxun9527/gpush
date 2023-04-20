@@ -10,7 +10,7 @@
 
 5、零拷贝。
 
-
+主要是提供一个思路，练习go的时间还没有到两年半，代码实现还不是很完善。
 
 ## 1、epoller
 
@@ -30,6 +30,7 @@ func Start() {
 			if conn == nil {
 				break
 			}
+            //当半消息的时候这里会阻塞
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
 				if err := epoller.Remove(conn); err != nil {
