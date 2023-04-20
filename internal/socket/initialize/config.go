@@ -1,9 +1,9 @@
 package initialize
 
 import (
+	"github.com/mofei1/gpush/internal/socket/global"
 	"github.com/spf13/viper"
 	"log"
-	"ws/internal/socket/global"
 )
 
 func InitConfig(addr string) {

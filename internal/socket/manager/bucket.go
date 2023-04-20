@@ -4,8 +4,6 @@ import (
 	"sync"
 )
 
-type concurrenceList struct {
-}
 type Bucket struct {
 	id          int32
 	id2Conn     map[int64]*Connection //map[连接ID]*Connection 连接列表(key=连接唯一ID)
@@ -73,6 +71,7 @@ func NewBucket(id int32) *Bucket {
 		id:      id,
 		id2Conn: make(map[int64]*Connection, 200),
 		rooms:   make(map[string]*Room, 100),
+		Logged:  make(map[string]*sync.Map, 1000),
 	}
 	messageChan := make([]chan PushJob, 20)
 	cs := make([]chan int, 10)

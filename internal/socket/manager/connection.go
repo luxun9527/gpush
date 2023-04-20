@@ -25,7 +25,6 @@ var (
 
 type HandlerFunc func([]byte, *Connection)
 type Connection struct {
-	atomic.Value
 	net.Conn
 	ID          int64
 	write       chan []byte

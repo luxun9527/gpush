@@ -5,9 +5,9 @@ chmod 777 "$dir/scripts/stop.sh"
 if [ ! -e "./bin" ];then
   mkdir bin
 fi
-wsdir="$dir/cmd/ws"
+wsdir="$dir/cmd/socket"
 cd $wsdir
-go build -o "$dir/bin/ws"
+go build -o "$dir/bin/socket"
 proxydir="$dir/cmd/proxy"
 cd $proxydir
 go build -o "$dir/bin/proxy"
@@ -17,5 +17,5 @@ proxyConfigDir="$dir/config/proxy/config.toml"
 echo $wsConfigDir
 nohup "$dir/bin/proxy" --config="$proxyConfigDir"   &
 echo $proxyConfigDir
-nohup "$dir/bin/ws" --config="$wsConfigDir"    &
+nohup "$dir/bin/socket" --config="$wsConfigDir"    &
 

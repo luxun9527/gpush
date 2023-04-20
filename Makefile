@@ -4,6 +4,6 @@ proto:
 
 run:
 	nohup ./proxy --config=config/proxy/config.toml &
-	nohup ./ws --config=config/ws/config.toml &
+	nohup ./ws --config=config/socket/config.toml &
 build:
 	cd scipts
