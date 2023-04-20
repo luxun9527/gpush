@@ -10,42 +10,13 @@
 
 5、零拷贝。
 
-主要是提供一个思路，练习go的时间还没有到两年半，代码实现还不是很完善。
 
-## 1、epoller
 
-1、实现参考，https://github.com/eranyanay/1m-go-websockets 只适用在写多读少的情况下，并且读之后的业务耗时的操作不要太频繁。
+## 1、epoll
 
-https://github.com/eranyanay/1m-go-websockets/blob/master/3_optimize_ws_goroutines/server.go
+1、实现参考，https://github.com/eranyanay/1m-go-websockets   只适用在写多读少的情况下，并且读之后的业务耗时的操作不要太频繁。
 
-```go
-func Start() {
-	for {
-		connections, err := epoller.Wait()
-		if err != nil {
-			log.Printf("Failed to epoll wait %v", err)
-			continue
-		}
-		for _, conn := range connections {
-			if conn == nil {
-				break
-			}
-            //当半消息的时候这里会阻塞
-			_, msg, err := conn.ReadMessage()
-			if err != nil {
-				if err := epoller.Remove(conn); err != nil {
-					log.Printf("Failed to remove %v", err)
-				}
-				conn.Close()
-			} else {
-				log.Printf("msg: %s", string(msg))
-			}
-		}
-	}
-}
-```
-
-https://studygolang.com/topics/13377 这里读的时候要考虑到半消息和多条消息的情况，半消息的时候会阻塞，要等全部到，多条消息的时候要处理多次。
+https://github.com/eranyanay/1m-go-websockets/blob/master/3_optimize_ws_goroutines/server.go 这里读的时候要考虑到半消息的情况，https://studygolang.com/topics/13377  当收到websocket数据包不全的情况下，go net官方库当不可读的时候是会阻塞的。
 
 我自己写的一个测试 github.com/gobwas/ws 提供了非常灵活的用法我们可以可以直接将一个websocket数据包转为字节。
 
@@ -115,7 +86,7 @@ func Connect(c *gin.Context) {
           return
       }
     log.Println(string(frame.Payload))
-	//最终要等到数据全部到，go官方库当不可读的时候是阻塞的。
+	//最终要等到数据全部到，go net官方库当不可读的时候是阻塞的。
    2023/04/18 18:09:58 abcdefjhigklmnopqrusasdflsdfasdl
 
 }
@@ -218,4 +189,5 @@ github.com/gobwas/ws 也有直接基于tcp升级的用法，避免http分配的4
 
 ## 6、具体代码
 
-具体代码仓库地址 https://github.com/mofei1/gpush（未完）   如果对您有帮助，请帮我点一下star。
+具体代码仓库地址 https://github.com/mofei1/gpush    练习时长还没到两年半，还有很多不完善的地方主要是提供一个实现的思路 如果对您有帮助，请帮我点一下star。
+
