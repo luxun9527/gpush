@@ -10,9 +10,10 @@ type SubPrivate struct {
 }
 
 func (SubPrivate) Handle(r request.Message, conn *manager.Connection) {
-	//todo 认证
+	//todo 实现订阅私有room
 	if !conn.IsLogin() {
 		conn.Send(response.SubWithoutLogin)
 		return
 	}
+
 }

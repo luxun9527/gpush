@@ -113,8 +113,8 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 		readBuf:       bytes.NewBuffer(make([]byte, 0, 100)),
 		lastHeartbeat: time.Now(),
 	}
-	nc.writeBuf = bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf)
 	//nc.writeBuf = bufio.NewWriterSize(nc, global.Config.Connection.WriteBuf)
+	nc.writeBuf = bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf)
 	CM.AddConnection(nc)
 	if err := CM.addEpollerConn(ID); err != nil {
 		global.L.Error("add conn to epoller failed", zap.Error(err))

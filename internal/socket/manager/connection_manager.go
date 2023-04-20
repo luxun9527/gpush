@@ -21,13 +21,27 @@ type PushJob struct {
 	uid    string
 }
 
-func (pushJob PushJob) GetRoomID() int32 {
-	r := []byte(pushJob.roomID)
-	var s int32
-	for _, v := range r {
-		s += int32(v)
+//选择一个合适的通道。
+func (pushJob PushJob) getCid() int32 {
+	var s int64
+	switch pushJob.PushType {
+	case PushAll:
+		//推送给所有用户的数据，要保证用户收到的数据是有序的只有选择同一个chan
+	case PushRoom:
+		//不同的room并发推送,但是推送到同一room中的数据有序的
+		r := []byte(pushJob.roomID)
+		for _, v := range r {
+			s += int64(v)
+		}
+	case PushPerson:
+		//不同的用户并发推送，但是用户收到的数据是有序的。
+		r := []byte(pushJob.uid)
+		for _, v := range r {
+			s += int64(v)
+		}
 	}
-	return s % 20
+
+	return int32(s % 20)
 }
 
 type ConnectionManager struct {
@@ -77,11 +91,10 @@ func (c *ConnectionManager) addEpollerConn(id int64) error {
 //分发数据到到所有bucket的jobchan中
 func (c *ConnectionManager) dispatchToBucket() {
 
-	for data := range c.dispatchChan {
-		//不同的room并发,room中的数据是有序的
-		rid := data.GetRoomID()
+	for job := range c.dispatchChan {
+		cid := job.getCid()
 		for _, v := range c.buckets {
-			v.messageChan[rid] <- data
+			v.messageChan[cid] <- job
 		}
 	}
 }

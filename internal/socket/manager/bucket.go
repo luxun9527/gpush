@@ -1,6 +1,7 @@
 package manager
 
 import (
+	sll "github.com/emirpasic/gods/lists/singlylinkedlist"
 	"sync"
 )
 
@@ -13,15 +14,17 @@ type Bucket struct {
 	roomsLock   sync.RWMutex
 	notify      []chan int
 	loggedLock  sync.RWMutex
-	Logged      map[string]*sync.Map //存储登录的连接,考虑到一个用户不同连接登录多个，很小的概率两个连接分到同一个bucket中。
+	LoggedConn  map[string]*sll.List //一个用户多次登录。
 }
 
 func (b *Bucket) Count() int {
 	b.id2ConnLock.RLock()
 	count := len(b.id2Conn)
-	defer b.id2ConnLock.RUnlock()
+	b.id2ConnLock.RUnlock()
 	return count
 }
+
+//处理收到的数据
 func (b *Bucket) handleMessage(c chan PushJob) {
 	for job := range c {
 		switch job.PushType {
@@ -34,44 +37,41 @@ func (b *Bucket) handleMessage(c chan PushJob) {
 		}
 	}
 }
-func (b *Bucket) AddLoginConnection(conn *Connection) {
-	b.loggedLock.RLock()
-	c, ok := b.Logged[conn.Uid]
-	b.loggedLock.RUnlock()
+
+// AddLoggedConnection 添加登录的连接
+func (b *Bucket) AddLoggedConnection(conn *Connection) {
+	b.loggedLock.Lock()
+	defer b.loggedLock.Unlock()
+	c, ok := b.LoggedConn[conn.Uid]
 	if !ok {
-		c = &sync.Map{}
-		b.loggedLock.Lock()
-		b.Logged[conn.Uid] = c
-		b.loggedLock.Unlock()
+		c = sll.New()
+		b.LoggedConn[conn.Uid] = c
 	}
-	c.Store(conn.ID, conn)
+	c.Add(conn)
 }
-func (b *Bucket) DeleteLoginConnection(conn *Connection) {
-	b.loggedLock.RLock()
-	c, ok := b.Logged[conn.Uid]
-	b.loggedLock.RUnlock()
-	if !ok {
-		return
+
+// DeleteLoggedConnection 删除登录的连接
+func (b *Bucket) DeleteLoggedConnection(conn *Connection) {
+	b.loggedLock.Lock()
+	defer b.loggedLock.Unlock()
+	c, ok := b.LoggedConn[conn.Uid]
+	if ok {
+		if i := c.IndexOf(conn); i != -1 {
+			c.Remove(i)
+		}
+		if c.Size() == 0 {
+			delete(b.LoggedConn, conn.Uid)
+		}
 	}
-	c.Delete(conn.ID)
-	var i int32
-	c.Range(func(_, _ any) bool {
-		i++
-		return true
-	})
-	if i == 0 {
-		b.loggedLock.Lock()
-		delete(b.Logged, conn.Uid)
-		b.loggedLock.Unlock()
-	}
+
 }
 func NewBucket(id int32) *Bucket {
 
 	bucket := &Bucket{
-		id:      id,
-		id2Conn: make(map[int64]*Connection, 200),
-		rooms:   make(map[string]*Room, 100),
-		Logged:  make(map[string]*sync.Map, 1000),
+		id:         id,
+		id2Conn:    make(map[int64]*Connection, 200),
+		rooms:      make(map[string]*Room, 100),
+		LoggedConn: make(map[string]*sll.List, 1000),
 	}
 	messageChan := make([]chan PushJob, 20)
 	cs := make([]chan int, 10)
@@ -87,6 +87,8 @@ func NewBucket(id int32) *Bucket {
 	bucket.messageChan = messageChan
 	return bucket
 }
+
+//读取通知读的操作。
 func (b *Bucket) readMessage(fds chan int) {
 	for fd := range fds {
 		b.id2ConnLock.RLock()
@@ -98,17 +100,22 @@ func (b *Bucket) readMessage(fds chan int) {
 		conn.Read(fd)
 	}
 }
+
+// AddConn 添加连接
 func (b *Bucket) AddConn(conn *Connection) {
 	b.id2ConnLock.Lock()
 	b.id2Conn[conn.ID] = conn
 	b.id2ConnLock.Unlock()
-
 }
+
+// DelConn 删除连接
 func (b *Bucket) DelConn(conn *Connection) {
 	b.id2ConnLock.Lock()
 	delete(b.id2Conn, conn.ID)
 	b.id2ConnLock.Unlock()
 }
+
+// JoinRoom 连接加入room
 func (b *Bucket) JoinRoom(roomID string, conn *Connection) {
 	b.roomsLock.Lock()
 	room, ok := b.rooms[roomID]
@@ -119,12 +126,16 @@ func (b *Bucket) JoinRoom(roomID string, conn *Connection) {
 	b.roomsLock.Unlock()
 	room.Join(conn)
 }
+
+// GetConnection 获取连接
 func (b *Bucket) GetConnection(id int64) (*Connection, bool) {
 	b.id2ConnLock.RLock()
 	defer b.id2ConnLock.RUnlock()
 	conn, ok := b.id2Conn[id]
 	return conn, ok
 }
+
+// LeaveRoom 离开room
 func (b *Bucket) LeaveRoom(roomID string, conn *Connection) {
 	b.roomsLock.RLock()
 	room, ok := b.rooms[roomID]
@@ -163,14 +174,14 @@ func (b *Bucket) pushRoom(job PushJob) {
 
 //pushPerson 推送给个人
 func (b *Bucket) pushPerson(job PushJob) {
-
+	// 这个锁的粒度比较大。
 	b.loggedLock.RLock()
-	lc, ok := b.Logged[job.uid]
-	b.loggedLock.RUnlock()
+	defer b.loggedLock.RUnlock()
+	lc, ok := b.LoggedConn[job.uid]
 	if !ok {
 		return
 	}
-	lc.Range(func(key, value any) bool {
+	lc.Find(func(_ int, value interface{}) bool {
 		c := value.(*Connection)
 		if ok := c.isSubbed(job.roomID); ok {
 			c.Send(job.data)
