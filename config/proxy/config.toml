@@ -2,5 +2,5 @@
 
 [server]
     PullPort=":10067"
-
+    HttpPort=":10068"
 

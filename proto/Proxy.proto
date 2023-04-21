@@ -1,11 +1,16 @@
 syntax = "proto3";
 package order;
-option go_package = "./proto;proxy";
-
+option go_package = "./;proxy";
+import "google/api/annotations.proto";
 
 service Proxy {
   //后端调用次接口推送数据
-  rpc PushData(Data) returns(Empty);
+  rpc PushData(Data) returns(Empty){
+    option (google.api.http) = {
+      post: "/v1/pushData"
+      body:"*"
+    };
+  }
   //api调用此接口获取推送的数据
   rpc PullData(Empty) returns(stream Data);
 
