@@ -3,8 +3,8 @@ package response
 import (
 	"encoding/json"
 	gws "github.com/gobwas/ws"
-	"ws/internal/socket/global"
-	"ws/internal/socket/model"
+	"github.com/mofei1/gpush/internal/socket/global"
+	"github.com/mofei1/gpush/internal/socket/model"
 )
 
 type Response struct {
@@ -40,24 +40,32 @@ func EncodePONG() []byte {
 var (
 	PONG           = EncodePONG()
 	ConnectSuccess = Response{
-		Code:    200,
+		Code:    20000,
 		Message: "连接成功",
 	}.EncodeMessage()
 	SubSuccess = Response{
-		Code:    201,
+		Code:    20001,
 		Message: "订阅成功",
 	}.EncodeMessage()
 	UnSubSuccess = Response{
-		Code:    202,
+		Code:    20002,
 		Message: "取消订阅成功",
 	}.EncodeMessage()
+	LoginSuccess = Response{
+		Code:    20003,
+		Message: "登录成功",
+	}.EncodeMessage()
+	LogoutSuccess = Response{
+		Code:    20003,
+		Message: "退出成功",
+	}.EncodeMessage()
 	Failed = Response{
-		Code:    203,
+		Code:    30001,
 		Message: "操作有误",
 		Detail:  "数据格式不正确",
 	}.EncodeMessage()
-	SubWithoutLogin = Response{
-		Code:    204,
+	NotLogin = Response{
+		Code:    30002,
 		Message: "操作有误",
 		Detail:  "未登录",
 	}.EncodeMessage()

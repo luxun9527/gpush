@@ -4,13 +4,13 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	pb "github.com/mofei1/gpush/proto"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"testing"
 	"time"
-	pb "ws/proto"
 )
 
 var count atomic.Int64

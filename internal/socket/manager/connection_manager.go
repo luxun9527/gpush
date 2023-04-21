@@ -4,7 +4,7 @@ import (
 	"github.com/mofei1/gpush/internal/socket/global"
 )
 
-type PushType int32
+type PushType uint8
 
 const (
 	PushAll PushType = iota + 1
@@ -120,11 +120,12 @@ func (c *ConnectionManager) PushAll(data []byte) {
 }
 
 // PushPerson 推送给所有
-func (c *ConnectionManager) PushPerson(uid string, data []byte) {
+func (c *ConnectionManager) PushPerson(uid, roomID string, data []byte) {
 	job := PushJob{
 		PushType: PushPerson,
 		uid:      uid,
 		data:     data,
+		roomID:   roomID,
 	}
 	c.dispatchChan <- job
 }
@@ -142,6 +143,7 @@ func (c *ConnectionManager) NotifyRead(fd int) {
 	b.notify[i] <- fd
 }
 
+// CloseConnection 关闭连接
 func (c *ConnectionManager) CloseConnection(fd int) {
 	b := c.getBucket(int64(fd))
 	conn, ok := b.GetConnection(int64(fd))
@@ -150,37 +152,85 @@ func (c *ConnectionManager) CloseConnection(fd int) {
 	}
 }
 
-// DelConnection 删除连接
+// DelConnection 从存储所有连接中删除连接
 func (c *ConnectionManager) DelConnection(conn *Connection) {
 	b := c.getBucket(conn.ID)
-	b.DelConn(conn)
+	b.delConn(conn)
 }
 
-func (c *ConnectionManager) JoinRoom(roomID string, conn *Connection) {
+// JoinPublicRoom 加入共有的房间
+func (c *ConnectionManager) JoinPublicRoom(roomID string, conn *Connection) {
 	if ok := conn.isSubbed(roomID); ok {
 		return
 	}
 	//新增连接上的room
-	conn.subRoom(roomID)
+	conn.subRoom(roomID, Public)
 	b := c.getBucket(conn.ID)
-	b.JoinRoom(roomID, conn)
+	b.joinPublicRoom(roomID, conn)
 }
-func (c *ConnectionManager) LeaveRoom(roomID string, conn *Connection) {
+
+// LeavePublicRoom 离开公有的房间
+func (c *ConnectionManager) LeavePublicRoom(roomID string, conn *Connection) {
 	//删除连接上的room
-	conn.unSubRoom(roomID)
-	b := c.getBucket(conn.ID)
-	b.LeaveRoom(roomID, conn)
+	conn.UnSubRoom(roomID)
+	c.leavePublicRoom(roomID, conn)
 }
-func (c *ConnectionManager) LoginPrivateRoom(roomID string, conn *Connection) {
+func (c *ConnectionManager) leavePublicRoom(roomID string, conn *Connection) {
+	//删除连接上的room
+	b := c.getBucket(conn.ID)
+	b.leavePublicRoom(roomID, conn)
+}
+
+// JoinPrivateRoom 加入私有的房间
+func (c *ConnectionManager) JoinPrivateRoom(roomID string, conn *Connection) {
 	//删除连接上的room
 	ok := conn.isSubbed(roomID)
 	if ok {
 		return
 	}
-	b := c.getBucket(conn.ID)
-	b.LeaveRoom(roomID, conn)
+	conn.subRoom(roomID, Private)
+
 }
 
+// LeavePrivateRoom 离开私有房间
+func (c *ConnectionManager) LeavePrivateRoom(roomID string, conn *Connection) {
+	//删除连接上的room
+	conn.UnSubRoom(roomID)
+}
 func (c *ConnectionManager) getBucket(connID int64) *Bucket {
 	return c.buckets[connID%int64(len(c.buckets))]
+}
+
+// LevelAll 离开所有保存了连接的地方,当连接退出关闭的时候
+func (c *ConnectionManager) LevelAll(conn *Connection) {
+	c.removeEpollerConn(conn.ID)
+	c.DelConnection(conn)
+	conn.lock.RLock()
+	defer conn.lock.RUnlock()
+	for room, roomType := range conn.subbedRooms {
+		if roomType == Public {
+			c.leavePublicRoom(room, conn)
+		}
+	}
+}
+func (c *ConnectionManager) Login(conn *Connection) {
+	b := c.getBucket(conn.ID)
+	b.addLoggedConnection(conn)
+
+}
+
+func (c *ConnectionManager) Logout(conn *Connection) {
+	//连接上订阅私有room
+	publicRoom := make(map[string]RoomType, len(conn.subbedRooms))
+	conn.lock.Lock()
+	for room, roomType := range conn.subbedRooms {
+		if roomType == Public {
+			publicRoom[room] = Public
+		}
+	}
+	conn.subbedRooms = publicRoom
+	conn.lock.Unlock()
+	b := c.getBucket(conn.ID)
+	b.deleteLoggedConnection(conn)
+
 }

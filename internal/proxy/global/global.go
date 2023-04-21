@@ -5,6 +5,5 @@ import (
 )
 
 var (
-	//普通日志
 	Config config.Config
 )

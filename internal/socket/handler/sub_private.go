@@ -10,10 +10,10 @@ type SubPrivate struct {
 }
 
 func (SubPrivate) Handle(r request.Message, conn *manager.Connection) {
-	//todo 实现订阅私有room
 	if !conn.IsLogin() {
-		conn.Send(response.SubWithoutLogin)
+		conn.Send(response.NotLogin)
 		return
 	}
-
+	manager.CM.JoinPrivateRoom(r.Topic, conn)
+	conn.Send(response.SubSuccess)
 }

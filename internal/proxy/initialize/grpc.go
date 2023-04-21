@@ -11,6 +11,7 @@ func InitGrpc() *grpc.Server {
 	t := &api.ProxyApi{
 		Data: make(chan *pb.Data, 10000),
 	}
+	t.PushSocketData()
 	pb.RegisterProxyServer(s, t)
 	return s
 }

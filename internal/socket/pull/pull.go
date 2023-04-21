@@ -77,7 +77,7 @@ func (pc *ProxyClient) pullData(addr string) error {
 				continue
 			}
 			if data.Uid != "" {
-				manager.CM.PushPerson(data.Uid, messageData)
+				manager.CM.PushPerson(data.Uid, data.Topic, messageData)
 			} else {
 				if data.Topic == "" {
 					manager.CM.PushAll(messageData)
