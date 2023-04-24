@@ -23,12 +23,13 @@ var (
 
 // Reader implements buffering for an io.Reader object.
 type Reader struct {
-	buf          []byte
-	rd           io.Reader // reader provided by the client
-	r, w         int       // buf read and write positions
-	err          error
-	lastByte     int // last byte read for UnreadByte; -1 means invalid
-	lastRuneSize int // size of last rune read for UnreadRune; -1 means invalid
+	buf            []byte
+	rd             io.Reader // reader provided by the client
+	r, w           int       // buf read and write positions
+	err            error
+	lastByte       int // last byte read for UnreadByte; -1 means invalid
+	lastRuneSize   int // size of last rune read for UnreadRune; -1 means invalid
+	lastMessagePos int //上一条消息读取的位置。
 }
 
 const minReadBufferSize = 16
@@ -112,11 +113,22 @@ func (b *Reader) fill() {
 	b.err = io.ErrNoProgress
 }
 
-//如果读出一条数据是在缓存中读出的，要及时将数据调整位置。
-func (b *Reader) adjustPos() {
-	n := copy(b.buf, b.buf[b.r:b.w])
+// UpdateLastMessagePos 更新读完上一条数据的位置。
+func (b *Reader) UpdateLastMessagePos() {
+	b.lastMessagePos = b.r
+}
+
+//GoBack  回退到读完上一条数据的位置。
+func (b *Reader) GoBack() {
+	b.r = b.lastMessagePos
+}
+
+//调整缓存数据区的位置。
+func (b *Reader) adjustDataPos() {
+	n := copy(b.buf, b.buf[b.lastMessagePos:b.w])
 	b.r = 0
 	b.w = n
+	b.lastMessagePos = 0
 }
 func (b *Reader) readErr() error {
 	err := b.err
@@ -215,6 +227,8 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 		if b.err != nil {
 			return 0, b.readErr()
 		}
+		//如果要读取数据，则要调整缓存数据的位置，从零开始。
+		b.adjustDataPos()
 		//取消len大于buf的判断。
 		//if len(p) >= len(b.buf) {
 		//	// Large read, empty buffer.

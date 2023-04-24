@@ -44,10 +44,10 @@ type Connection struct {
 	writeBuf  *bufio.Writer
 	closeFunc sync.Once
 	//读数据到这个buf中
-	webSocketReader *tools.WebSocketReader
-	lastHeartbeat   time.Time
-	isLogin         atomic.Bool
-	Uid             string
+	readerBuf     *tools.Reader
+	lastHeartbeat time.Time
+	isLogin       atomic.Bool
+	Uid           string
 }
 
 func (conn *Connection) SetLoginStatus(status bool) {
@@ -79,18 +79,17 @@ func (conn *Connection) Read(data []byte) (n int, err error) {
 
 func (conn *Connection) ReadMessage() {
 
-	//循环读
 	for {
-		frame, err := conn.webSocketReader.ReadFrame()
+		frame, err := ws.ReadFrame(conn.readerBuf)
 		if err != nil {
 			if err == io.ErrUnexpectedEOF {
-				if err := conn.webSocketReader.Reset(); err != nil {
-					conn.Close()
-					return
-				}
+				//如果是没有读完，回退到上一次读出完整数据的位置.
+				conn.readerBuf.GoBack()
 			}
 			break
 		}
+		//更新读出上一条完整数据的位置。
+		conn.readerBuf.UpdateLastMessagePos()
 		if frame.Header.OpCode == ws.OpClose {
 			conn.Close()
 			return
@@ -124,8 +123,7 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 		writeBuf:      bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf),
 	}
 	//nc.writeBuf = bufio.NewWriterSize(nc, global.Config.Connection.WriteBuf)
-	buf := tools.NewReaderSize(nc, global.Config.Connection.ReadBuf)
-	nc.webSocketReader = tools.NewWebSocketReader(buf, global.Config.Connection.ReadBuf)
+	nc.readerBuf = tools.NewReaderSize(nc, global.Config.Connection.ReadBuf)
 	CM.AddConnection(nc)
 	if err := CM.addEpollerConn(ID); err != nil {
 		global.L.Error("add conn to epoller failed", zap.Error(err))
