@@ -123,8 +123,11 @@ func (b *Reader) GoBack() {
 	b.r = b.lastMessagePos
 }
 
-//调整缓存数据区的位置。
+//调整缓存数据区的位置，从零开始。
 func (b *Reader) adjustDataPos() {
+	if b.lastMessagePos == b.w {
+		return
+	}
 	n := copy(b.buf, b.buf[b.lastMessagePos:b.w])
 	b.r = 0
 	b.w = n
@@ -227,8 +230,14 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 		if b.err != nil {
 			return 0, b.readErr()
 		}
+
 		//如果要读取数据，则要调整缓存数据的位置，从零开始。
 		b.adjustDataPos()
+
+		//大于缓存区执行扩容操作。
+		if b.w == len(b.buf) {
+			b.grow()
+		}
 		//取消len大于buf的判断。
 		//if len(p) >= len(b.buf) {
 		//	// Large read, empty buffer.
@@ -268,22 +277,15 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-// GoBackN 主要的一个思路就是当没有读完的时候回退，注意消息不能超过缓存区的大小。
-func (b *Reader) GoBackN(n int) error {
-	if b.r < n {
-		return errors.New("go back n failed n over r")
-	}
-	b.r -= n
-	return nil
+//缓存区大小x2
+func (b *Reader) grow() {
+	bufSize := len(b.buf) * 2
+	buf := make([]byte, bufSize)
+	n := copy(buf, b.buf)
+	b.buf = buf
+	b.w = n
 }
 
-//func (b *Reader) Reset1(n int)  error {
-//	if b.r < n{
-//		return  errors.New("go back n failed n over r")
-//	}
-//	b.r -= n
-//	return nil
-//}
 // ReadByte reads and returns a single byte.
 // If no byte is available, returns an error.
 func (b *Reader) ReadByte() (byte, error) {

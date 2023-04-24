@@ -165,7 +165,7 @@ func Connect(c *gin.Context) {
 }
 ```
 
-**解决方法**：将数据读出来，如果io.ReadFull如果没有读完的，读出多少就回退多少，这里需要自己diy bufio.Reader 和 github.com/gobwas/ws"的ReadFrame
+**解决方法**：将数据读出来，如果io.ReadFull如果没有读完的，就回退到上次读出完整数据的位置，这里需要自己diy bufio.Reader 
 
 ### 2、使用写缓存
 
