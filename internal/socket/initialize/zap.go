@@ -1,6 +1,6 @@
 package initialize
 
-import "github.com/mofei1/gpush/internal/socket/global"
+import "github.com/luxun9527/gpush/internal/socket/global"
 
 func InitLogger() {
 	global.L = global.Config.Logger.Build()

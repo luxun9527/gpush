@@ -3,8 +3,8 @@ package response
 import (
 	"encoding/json"
 	gws "github.com/gobwas/ws"
-	"github.com/mofei1/gpush/internal/socket/global"
-	"github.com/mofei1/gpush/internal/socket/model"
+	"github.com/luxun9527/gpush/internal/socket/global"
+	"github.com/luxun9527/gpush/internal/socket/model"
 )
 
 type Response struct {

@@ -1,4 +1,4 @@
-module github.com/mofei1/gpush
+module github.com/luxun9527/gpush
 
 go 1.18
 

@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	gws "github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
-	"github.com/mofei1/gpush/internal/socket/global"
-	"github.com/mofei1/gpush/internal/socket/handler"
-	"github.com/mofei1/gpush/internal/socket/manager"
-	"github.com/mofei1/gpush/internal/socket/model/response"
+	"github.com/luxun9527/gpush/internal/socket/global"
+	"github.com/luxun9527/gpush/internal/socket/handler"
+	"github.com/luxun9527/gpush/internal/socket/manager"
+	"github.com/luxun9527/gpush/internal/socket/model/response"
 	"go.uber.org/zap"
 )
 

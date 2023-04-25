@@ -3,9 +3,9 @@ package initialize
 import (
 	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/mofei1/gpush/internal/proxy/api"
-	"github.com/mofei1/gpush/internal/proxy/global"
-	pb "github.com/mofei1/gpush/proto"
+	"github.com/luxun9527/gpush/internal/proxy/api"
+	"github.com/luxun9527/gpush/internal/proxy/global"
+	pb "github.com/luxun9527/gpush/proto"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net"

@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/mofei1/gpush/internal/socket/global"
+	"github.com/luxun9527/gpush/internal/socket/global"
 )
 
 type PushType uint8

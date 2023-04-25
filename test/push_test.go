@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	pb "github.com/mofei1/gpush/proto"
+	pb "github.com/luxun9527/gpush/proto"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 	"log"

@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/mofei1/gpush/internal/socket/manager"
-	"github.com/mofei1/gpush/internal/socket/model/request"
-	"github.com/mofei1/gpush/internal/socket/model/response"
+	"github.com/luxun9527/gpush/internal/socket/manager"
+	"github.com/luxun9527/gpush/internal/socket/model/request"
+	"github.com/luxun9527/gpush/internal/socket/model/response"
 	"strings"
 )
 

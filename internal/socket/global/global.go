@@ -1,7 +1,7 @@
 package global
 
 import (
-	"github.com/mofei1/gpush/internal/socket/config"
+	"github.com/luxun9527/gpush/internal/socket/config"
 	"go.uber.org/zap"
 )
 
