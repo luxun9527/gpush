@@ -64,7 +64,7 @@ func (pc *ProxyClient) pullData(addr string) error {
 				time.Sleep(time.Second * 3)
 				continue
 			}
-			Received.Inc()
+			//Received.Inc()
 			message := model.NewMessage(gws.OpText, data.Data)
 			var messageData []byte
 			if global.Config.Connection.IsCompress {

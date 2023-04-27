@@ -1,75 +1,6 @@
-# ws推送组件
+# 高性能websocket推送组件
 
 ![image-20230423222249615](https://i.328888.xyz/2023/04/23/iS36no.jpeg)
-
-## 实现功能
-
-### 推送数据到公共频道
-
-### 推送数据到所有连接
-
-### 推送数据到私有频道
-
-## 订阅操作
-
-客户端请求数据的基本结构
-
-```json
-{
-    "code":1,
-    "topic":"test",
-    "data":"any"
-}
-```
-
-code:表示操作的类型
-
-- 1订阅公共频道。
-- 2取消订阅公共频道。
-- 3登录操作，需要你自己实现登录的逻辑。
-- 4登出操作,需要你自己实现登出的逻辑，会退出你订阅的所有私有频道。
-- 5订阅私有频道，需要登录。
-- 6取消订阅私有频道，需要登录。
-
-topic:你订阅的频道的名称
-
-data:任意类型，保留字段，如果是登录操作你可以用这个字段传你的登录凭证信息。
-
-## 后台推送
-
-后台推送提供http接口和grpc接口
-
-**http 接口**：使用grpc-gateway 提供
-
-POST /v1/pushData
-
-json格式数据
-
-```json
-{
-    "uid":"123456",
-    "topic":"test",
-    "data":"5pWw5o2u"
-}
-```
-
-uid    :  用户id当推送给私有频道指定用户的id，否则为空。
-
-topic : 频道的名称，当你想推送给所有的时候为空。
-
-data : 具体的推送的内容，推送的数据要经过base64编码
-
-**grpc接口** github.com/mofei1/gpush/proto
-
-protobuf 格式
-
-```protobuf
-message Data{
-  string uid =1;
-  string topic=2;
-  bytes data=3;
-}
-```
 
 ## ws推送优化
 
@@ -78,10 +9,6 @@ message Data{
 2、分片存储连接，降低锁的粒度，提高推送的并发。
 
 3、写的时候使用缓存，批量定时写入，减少系统调用、协程的调度。
-
-4、直接使用tcp连接升级。
-
-5、零拷贝。
 
 
 
@@ -165,7 +92,7 @@ func Connect(c *gin.Context) {
 }
 ```
 
-**解决方法**：将数据读出来，如果io.ReadFull如果没有读完的，就回退到上次读出完整数据的位置，这里需要自己diy bufio.Reader 
+**解决方法**：将数据读出来，如果io.ReadFull如果没有读完的，就回退到上次读出完整数据的位置，这里需要自己diy bufio.Reader ,当没有读出“半消息的时候缓存起来”。
 
 ### 2、使用写缓存
 
@@ -212,21 +139,76 @@ for {
 
 主要的思路就是分区map,连接分散到到不同的map中，提高锁的粒度和推送的并发读。同时如果是读多写少的情况可以使用sync.Map提高效率
 
-### 4、零拷贝
+## 实现功能
 
-在大包多的情况是使用零拷贝，好像也会提高性能。
+推送数据到公共频道
 
- https://zhuanlan.zhihu.com/p/308054212
+推送数据到所有连接
 
-https://mp.weixin.qq.com/s/wSaJYg-HqnYY4SdLA2Zzaw
+推送数据到私有频道
 
-### 5、基于tcp升级
+## 订阅操作
 
-github.com/gobwas/ws 也有直接基于tcp升级的用法，避免http分配的4k读缓存。
+客户端请求数据的基本结构
 
+```json
+{
+    "code":1,
+    "topic":"test",
+    "data":"any"
+}
+```
 
+code:表示操作的类型
 
-### 6、具体代码
+- 1订阅公共频道。
+- 2取消订阅公共频道。
+- 3登录操作，需要你自己实现登录的逻辑。
+- 4登出操作,需要你自己实现登出的逻辑，会退出你订阅的所有私有频道。
+- 5订阅私有频道，需要登录。
+- 6取消订阅私有频道，需要登录。
 
-具体代码仓库地址 https://github.com/mofei1/gpush    练习时长还没到两年半，还有很多不完善的地方主要是提供一个实现的思路 如果对您有帮助，请帮我点一下star。
+topic:你订阅的频道的名称
+
+data:任意类型，保留字段，如果是登录操作你可以用这个字段传你的登录凭证信息。
+
+## 后台推送
+
+后台推送提供http接口和grpc接口
+
+**http 接口**：使用grpc-gateway 提供
+
+POST /v1/pushData
+
+json格式数据
+
+```json
+{
+    "uid":"123456",
+    "topic":"test",
+    "data":"5pWw5o2u"
+}
+```
+
+uid    :  用户id当推送给私有频道指定用户的id，否则为空。
+
+topic : 频道的名称，当你想推送给所有的时候为空。
+
+data : 具体的推送的内容，推送的数据要经过base64编码
+
+**grpc接口** github.com/luxun9527/gpush/proto
+
+protobuf 格式
+
+```protobuf
+message Data{
+  string uid =1;
+  string topic=2;
+  bytes data=3;
+}
+```
+
+## 代码
+
+具体代码仓库地址 https://github.com/luxun9527/gpush    练习时长还没到两年半，还有很多不完善的地方主要是提供一个实现的思路 如果对您有帮助，请帮我点一下star。
 

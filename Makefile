@@ -7,6 +7,5 @@ proto:
         --go_out=./proto\
         --go-grpc_out=./proto  \
         proto/Proxy.proto
-run:
-	nohup ./proxy --config=config/proxy/config.toml &
-	nohup ./ws --config=config/socket/config.toml &
+build:
+	./scripts/run.sh

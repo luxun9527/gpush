@@ -101,7 +101,7 @@ func (conn *Connection) ReadMessage() {
 				return
 			}
 		}
-		Received.Inc()
+		//Received.Inc()
 		conn.handlerFunc(frame.Payload, conn)
 
 	}

@@ -254,7 +254,7 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 		//}
 		// One read.
 		// Do not use b.fill, which will loop.
-		//取消重置为零，选择从w开始读,必须要规定一条message最大长多少。
+		//取消重置为零，选择从w开始读。
 		//b.r = 0
 		//b.w = 0
 		n, b.err = b.rd.Read(b.buf[b.w:])
