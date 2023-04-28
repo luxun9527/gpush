@@ -8,4 +8,6 @@ proto:
         --go-grpc_out=./proto  \
         proto/Proxy.proto
 build:
+	./scripts/build.sh
+run:
 	./scripts/run.sh

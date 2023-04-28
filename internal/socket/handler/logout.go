@@ -10,7 +10,7 @@ type LoginOut struct {
 }
 
 func (LoginOut) Handle(r request.Message, conn *manager.Connection) {
-	conn.SetLoginStatus(false)
+	conn.SetUid("")
 	if !conn.IsLogin() {
 		conn.Send(response.NotLogin)
 		return

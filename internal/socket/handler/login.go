@@ -11,8 +11,7 @@ type Login struct {
 
 func (Login) Handle(r request.Message, conn *manager.Connection) {
 	//todo 认证
-	conn.SetLoginStatus(true)
-	conn.Uid = "123456"
+	conn.SetUid("123456")
 	manager.CM.Login(conn)
 	conn.Send(response.LoginSuccess)
 }

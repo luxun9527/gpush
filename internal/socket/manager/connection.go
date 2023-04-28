@@ -46,22 +46,29 @@ type Connection struct {
 	//读数据到这个buf中
 	readBuf       *tools.Reader
 	lastHeartbeat time.Time
-	isLogin       atomic.Bool
-	Uid           string
+	uid           atomic.String
 }
 
-func (conn *Connection) SetLoginStatus(status bool) {
-	conn.isLogin.Store(status)
+// SetUid 设置uid
+func (conn *Connection) SetUid(uid string) {
+	conn.uid.Store(uid)
 }
+
+// GetUid 获取UID
+func (conn *Connection) GetUid() string {
+	return conn.uid.Load()
+}
+
+// IsLogin 是否登录
 func (conn *Connection) IsLogin() bool {
-	return conn.isLogin.Load()
+	return conn.GetUid() != ""
 }
+
+// Send 发送数据 看你的选择，如果消息很重要一定要推出去，当不可写的时候你应该要关闭连接
 func (conn *Connection) Send(data []byte) {
-	//SendCount.Inc()
 	select {
 	case conn.write <- data:
 	default:
-		//Ship.Inc()
 	}
 
 }

@@ -10,7 +10,7 @@ type UnSubPrivate struct {
 }
 
 func (UnSubPrivate) Handle(r request.Message, conn *manager.Connection) {
-	if !conn.IsLogin() {
+	if conn.IsLogin() {
 		conn.Send(response.NotLogin)
 		return
 	}

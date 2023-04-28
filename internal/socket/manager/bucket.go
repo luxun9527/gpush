@@ -42,10 +42,10 @@ func (b *Bucket) handleMessage(c chan *PushJob) {
 func (b *Bucket) addLoggedConnection(conn *Connection) {
 	b.loggedLock.Lock()
 	defer b.loggedLock.Unlock()
-	c, ok := b.LoggedConn[conn.Uid]
+	c, ok := b.LoggedConn[conn.GetUid()]
 	if !ok {
 		c = sll.New()
-		b.LoggedConn[conn.Uid] = c
+		b.LoggedConn[conn.GetUid()] = c
 	}
 	c.Add(conn)
 }
@@ -54,13 +54,13 @@ func (b *Bucket) addLoggedConnection(conn *Connection) {
 func (b *Bucket) deleteLoggedConnection(conn *Connection) {
 	b.loggedLock.Lock()
 	defer b.loggedLock.Unlock()
-	c, ok := b.LoggedConn[conn.Uid]
+	c, ok := b.LoggedConn[conn.GetUid()]
 	if ok {
 		if i := c.IndexOf(conn); i != -1 {
 			c.Remove(i)
 		}
 		if c.Size() == 0 {
-			delete(b.LoggedConn, conn.Uid)
+			delete(b.LoggedConn, conn.GetUid())
 		}
 	}
 
@@ -77,7 +77,7 @@ func NewBucket(id int32) *Bucket {
 	cs := make([]chan int, 10)
 	for i := 0; i < len(cs); i++ {
 		cs[i] = make(chan int, 10)
-		go bucket.readMessage(cs[i])
+		go bucket.notifyReadMessage(cs[i])
 	}
 	bucket.notify = cs
 	for i := 0; i < len(messageChan); i++ {
@@ -88,8 +88,8 @@ func NewBucket(id int32) *Bucket {
 	return bucket
 }
 
-//读取通知读的操作。
-func (b *Bucket) readMessage(fds chan int) {
+//读取连接读取
+func (b *Bucket) notifyReadMessage(fds chan int) {
 	for fd := range fds {
 		b.id2ConnLock.RLock()
 		conn, ok := b.id2Conn[int64(fd)]
