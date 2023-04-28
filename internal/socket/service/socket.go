@@ -21,7 +21,7 @@ func Connect(c *gin.Context) {
 	}
 	conn, _, _, err := httpUpgrade.Upgrade(c.Request, c.Writer)
 	if err != nil {
-		global.L.Error("upgrade 连接失败", zap.Error(err))
+		global.L.Error("upgrade failed", zap.Error(err))
 		return
 	}
 	_, err = conn.Write(response.ConnectSuccess)

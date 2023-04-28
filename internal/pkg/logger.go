@@ -120,7 +120,6 @@ func (c *LoggerConfig) Build() *zap.Logger {
 		encoder = zapcore.NewJSONEncoder(encoderConfig)
 	} else {
 		encoder = zapcore.NewConsoleEncoder(encoderConfig)
-
 	}
 	if getLevel(c.Level) == 100 {
 		log.Panicf("error level %v", c.Level)

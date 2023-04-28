@@ -1,9 +1,11 @@
 
 
 [server]
+    ip =""
     port="0.0.0.0:9992"
 
 [bucket]
+    #分区数量
     BucketCount =512
     JobChanSize =100
     DispatchChanSize =100
@@ -17,18 +19,28 @@
    IsCompress=false
    #写缓存的大小
    WriteBuf=1024
-   ReadBuf=100
+   #读缓存的大小
+   ReadBuf=200
+   #收到消息最大的大小。最好和读缓存设置成一样大。
+   MaxMessageSize=200
 [logger]
+    # debug等级 debug info warn error
     Level ="debug"
+    #是否增加添加堆栈信息
     Stacktrace=true
+    #是否添加调用者信息
     AddCaller =true
+    #是否deubug 在输出到标准输出
     Debug =true
     FileName ="./stdout.ws.json"
     WarnFileName ="./stderr.ws.json"
+    # 日志轮转大小，单位MB，默认500MB
     MaxSize =100
+    # 日志轮转最大时间，单位day，默认1 day
     MaxAge =10
+    # 日志轮转个数，默认10
     MaxBackup =10
-    Async =true
+
     #是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
     Json=false
 [proxy]

@@ -15,13 +15,6 @@ import (
 	"time"
 )
 
-var (
-	Received     atomic.Int64
-	Ship         atomic.Int64
-	LastReceived atomic.Int64
-	SendCount    atomic.Int64
-)
-
 type RoomType uint8
 
 const (
@@ -32,17 +25,18 @@ const (
 type HandlerFunc func([]byte, *Connection)
 type Connection struct {
 	net.Conn
+	//连接的fd
 	ID          int64
 	write       chan []byte
 	lock        sync.RWMutex
 	subbedRooms map[string]RoomType
+	//是否关闭
 	isClosed    bool
 	ip          string
 	handlerFunc HandlerFunc
-	//写频率
-	writeRate *time.Ticker
-	writeBuf  *bufio.Writer
-	closeFunc sync.Once
+	writeRate   *time.Ticker
+	writeBuf    *bufio.Writer
+	closeFunc   sync.Once
 	//读数据到这个buf中
 	readBuf       *tools.Reader
 	lastHeartbeat time.Time
@@ -108,7 +102,6 @@ func (conn *Connection) ReadMessage() {
 				return
 			}
 		}
-		//Received.Inc()
 		conn.handlerFunc(frame.Payload, conn)
 
 	}

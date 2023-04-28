@@ -7,14 +7,11 @@ import (
 	"github.com/luxun9527/gpush/internal/socket/manager"
 	"github.com/luxun9527/gpush/internal/socket/model"
 	pb "github.com/luxun9527/gpush/proto"
-	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"sync"
 	"time"
 )
-
-var Received atomic.Int64
 
 // ProxyClient proxy的客户端，维护proxy连接
 type ProxyClient struct {
@@ -64,7 +61,6 @@ func (pc *ProxyClient) pullData(addr string) error {
 				time.Sleep(time.Second * 3)
 				continue
 			}
-			//Received.Inc()
 			message := model.NewMessage(gws.OpText, data.Data)
 			var messageData []byte
 			if global.Config.Connection.IsCompress {

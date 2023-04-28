@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	//普通日志
 	L      *zap.Logger
 	Config config.Config
 )
