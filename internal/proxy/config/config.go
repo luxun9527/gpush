@@ -3,6 +3,7 @@ package config
 import "github.com/luxun9527/gpush/internal/pkg"
 
 type Config struct {
-	Server Server
-	Logger pkg.LoggerConfig
+	Server     Server
+	Logger     pkg.LoggerConfig
+	EtcdConfig pkg.EtcdConfig `mapstructure:"etcd"`
 }

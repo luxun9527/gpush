@@ -122,7 +122,6 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 		lastHeartbeat: time.Now(),
 		writeBuf:      bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf),
 	}
-	//nc.writeBuf = bufio.NewWriterSize(nc, global.Config.Connection.WriteBuf)
 	nc.readBuf = tools.NewReaderSize(nc, global.Config.Connection.ReadBuf)
 	CM.AddConnection(nc)
 	if err := CM.addEpollerConn(ID); err != nil {

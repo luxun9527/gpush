@@ -13,5 +13,6 @@ func main() {
 	initialize.InitLogger()
 	initialize.InitGrpc()
 	initialize.InitHttpServer()
+	initialize.InitEtcd()
 	select {}
 }

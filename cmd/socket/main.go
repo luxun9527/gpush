@@ -25,7 +25,7 @@ func main() {
 	initialize.InitConfig(addr)
 	initialize.InitLogger()
 	initialize.InitConnectionManager()
-	pull.InitProxyConn()
+	pull.InitProxyClientManager()
 	r.GET("/ws", service.Connect)
 	r.GET("/stats", service.Stats)
 	global.L.Info("load config path success", zap.Any("detail", global.Config))

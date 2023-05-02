@@ -43,5 +43,6 @@
 
     #是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
     Json=false
-[proxy]
-    addrs = ["192.168.2.99:10067"]
+[etcd]
+    endpoints=["192.168.2.99:2379"]
+    keyPrefix="/proxy"

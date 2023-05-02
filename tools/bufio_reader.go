@@ -277,10 +277,10 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-//缓存区大小x2
+//缓存区大小x1.5
 func (b *Reader) grow() {
-	bufSize := len(b.buf) * 2
-	buf := make([]byte, bufSize)
+	bufSize := float64(len(b.buf)) * 1.5
+	buf := make([]byte, int64(bufSize))
 	n := copy(buf, b.buf)
 	b.buf = buf
 	b.w = n

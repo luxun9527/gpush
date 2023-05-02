@@ -8,4 +8,5 @@ type Config struct {
 	Logger     pkg.LoggerConfig `mapstructure:"logger"`
 	Proxy      Proxy            `mapstructure:"proxy"`
 	Connection Connection       `mapstructure:"connection"`
+	EtcdConfig pkg.EtcdConfig   `mapstructure:"etcd"`
 }
