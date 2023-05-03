@@ -57,7 +57,9 @@ func GetConnectionInfo() int {
 	}
 	return count
 }
-func NewConnectionManager() {
+
+// InitConnectionManager 初始化连接管理
+func InitConnectionManager() {
 	CM = &ConnectionManager{
 		buckets:      make([]*Bucket, global.Config.Bucket.BucketCount),
 		dispatchChan: make(chan *PushJob, global.Config.Bucket.DispatchChanSize),

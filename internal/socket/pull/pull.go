@@ -88,6 +88,7 @@ func (c *ProxyClientManager) Watch() {
 	}
 }
 
+// InitProxyClientManager 初始化连接proxy客户端管理
 func InitProxyClientManager() {
 	client := newProxyClient()
 	client.initProxyClientManager()
