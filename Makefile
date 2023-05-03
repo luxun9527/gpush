@@ -11,5 +11,7 @@ build:
 	./scripts/build.sh
 run:
 	./scripts/run.sh
-
-docker:
+dockerBuild:
+	docker build -t='gpush' .
+dockerRun:
+	docker run -di --name=gpush -p 9992:9992 -p 10067:10067 -p 10068:10068 gpush:latest
