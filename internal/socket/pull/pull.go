@@ -22,7 +22,7 @@ type ProxyClientManager struct {
 	proxyClients map[string]*proxyClient
 }
 
-func newProxyClient() ProxyClientManager {
+func newProxyClientManager() ProxyClientManager {
 	cli, err := global.Config.EtcdConfig.BuildClient()
 	if err != nil {
 		global.L.Panic("init etcd client failed", zap.Error(err))
@@ -54,6 +54,13 @@ func (c *ProxyClientManager) initProxyClientManager() {
 	go c.Watch()
 
 }
+
+// InitProxyClientManager 初始化连接proxy客户端管理
+func InitProxyClientManager() {
+	client := newProxyClientManager()
+	client.initProxyClientManager()
+}
+
 func (c *ProxyClientManager) Watch() {
 
 	for resp := range c.cli.Watch(context.Background(), global.Config.EtcdConfig.KeyPrefix, clientv3.WithPrefix()) {
@@ -86,12 +93,6 @@ func (c *ProxyClientManager) Watch() {
 			}
 		}
 	}
-}
-
-// InitProxyClientManager 初始化连接proxy客户端管理
-func InitProxyClientManager() {
-	client := newProxyClient()
-	client.initProxyClientManager()
 }
 
 type proxyClient struct {

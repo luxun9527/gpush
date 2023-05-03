@@ -166,6 +166,23 @@ func (conn *Connection) WriteLoop() {
 	}
 }
 
+//compare
+//func (conn *Connection) WriteLoop() {
+//	defer func() {
+//		if err := recover(); err != nil {
+//			global.L.Debug("recover from read", zap.Any("err", err))
+//		}
+//		conn.Close()
+//	}()
+//
+//	for data := range conn.write {
+//		if _, err := conn.Write(data); err != nil {
+//			return
+//		}
+//	}
+//
+//}
+
 //func (conn *Connection) Write(data []byte) (int, error) {
 //	var nn int
 //	for {

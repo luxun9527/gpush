@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// InitHttpServer 初始化http服务
 func InitHttpServer() {
 	r := gin.New()
 	r.GET("/ws", connect)

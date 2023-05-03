@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// InitConfig 初始化配置
 func InitConfig(addr string) {
 	viperConfig := viper.New()
 	viperConfig.SetConfigFile(addr)

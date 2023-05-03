@@ -25,8 +25,11 @@ func main() {
 	}
 	go func() {
 		for {
-			time.Sleep(time.Second * 1)
-			log.Printf("发送了多少条 %v\n", hasSend.Load())
+			time.Sleep(time.Second)
+			cr := currentReceived.Load()
+			receivedLastSecond := cr - lastReceived.Load()
+			lastReceived = currentReceived
+			log.Printf("当前收到 %v条 平均每秒收到 %v条\n", cr, receivedLastSecond)
 		}
 
 	}()
@@ -41,7 +44,7 @@ func connect(url string) {
 		log.Printf("connect failed err = %v", err.Error())
 		return
 	}
-	SendMessage(conn)
+	ReadMessage(conn)
 }
 func ReadMessage(conn *websocket.Conn) {
 	//conn.EnableWriteCompression(true)
@@ -61,7 +64,6 @@ func ReadMessage(conn *websocket.Conn) {
 			log.Println("err", err)
 			return
 		}
-
 		currentReceived.Inc()
 
 	}
