@@ -16,7 +16,7 @@ func InitHttpServer() {
 	r.GET("/ws", connect)
 	r.GET("/stats", stats)
 	go func() {
-		if err := r.Run(global.Config.Server.Port); err != nil {
+		if err := r.Run("0.0.0.0:" + global.Config.Server.Port); err != nil {
 			global.L.Panic("init http server failed", zap.Error(err))
 		}
 	}()

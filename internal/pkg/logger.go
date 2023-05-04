@@ -74,7 +74,6 @@ func (c *LoggerConfig) Build() *zap.Logger {
 	})
 	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl < zapcore.WarnLevel
-
 	})
 	encoderConfig := zapcore.EncoderConfig{
 		//当存储的格式为JSON的时候这些作为可以key
@@ -97,7 +96,7 @@ func (c *LoggerConfig) Build() *zap.Logger {
 		warnWs = zapcore.Lock(os.Stderr)
 		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	} else {
-		nomalConfig := &lumberjack.Logger{
+		normalConfig := &lumberjack.Logger{
 			Filename:   c.FileName,
 			MaxSize:    int(c.MaxSize),
 			MaxAge:     int(c.MaxAge),
@@ -113,7 +112,7 @@ func (c *LoggerConfig) Build() *zap.Logger {
 			LocalTime:  true,
 			Compress:   true,
 		}
-		ws = zapcore.AddSync(nomalConfig)
+		ws = zapcore.AddSync(normalConfig)
 		warnWs = zapcore.AddSync(warnConfig)
 	}
 	if c.Json {

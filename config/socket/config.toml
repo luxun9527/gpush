@@ -1,28 +1,25 @@
 
 
 [server]
-    ip =""
-    port="0.0.0.0:9992"
+    port="9992"
 
 [bucket]
     #分区数量
     BucketCount =512
-    JobChanSize =100
+    #分发chan的长度
     DispatchChanSize =100
-    BucketFanOutCount =32
 [connection]
   #写频率毫秒
    WriteRate=500
-  #连接超时事件
+  #连接超时时间单位毫秒
    TimeOut=200000000
    #是否压缩 使用defalte协议压缩
    IsCompress=false
    #写缓存的大小
    WriteBuf=1024
-   #读缓存的大小
+   #读缓存的大小，最后设置成最大消息的大小
    ReadBuf=200
-   #收到消息最大的大小。最好和读缓存设置成一样大。
-   MaxMessageSize=200
+
 [logger]
     # debug等级 debug info warn error
     Level ="debug"
@@ -30,9 +27,11 @@
     Stacktrace=true
     #是否添加调用者信息
     AddCaller =true
-    #是否deubug 在输出到标准输出
+    #是否deubug 在输出到标准输出,和输出到文件中互斥
     Debug =true
+    #warn级别以下的日志输出到的文件
     FileName ="./stdout.ws.json"
+    #warn级别以上的日志输出到文件
     WarnFileName ="./stderr.ws.json"
     # 日志轮转大小，单位MB，默认500MB
     MaxSize =100
@@ -40,9 +39,10 @@
     MaxAge =10
     # 日志轮转个数，默认10
     MaxBackup =10
-
     #是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
     Json=false
 [etcd]
+    #etcd服务的地址
     endpoints=["192.168.2.99:2379"]
+    #设置的key前缀
     keyPrefix="/proxy"
