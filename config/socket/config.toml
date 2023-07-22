@@ -45,4 +45,4 @@
     #etcd服务的地址
     endpoints=["192.168.2.99:2379"]
     #设置的key前缀
-    keyPrefix="/proxy"
+    keyPrefix="proxy"
