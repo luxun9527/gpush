@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/luxun9527/gpush/internal/proxy/global"
 	"github.com/luxun9527/gpush/tools"
+	"github.com/spf13/cast"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 )
@@ -33,7 +34,7 @@ func (ec EtcdClient) resister() error {
 	ec.leaseID = resp.ID
 	ip, _ := tools.GetLocalIP()
 	socket := ip + global.Config.Server.PullPort
-	key := global.Config.EtcdConfig.KeyPrefix + "-" + socket
+	key := global.Config.EtcdConfig.KeyPrefix + "/" + cast.ToString(int64(resp.ID))
 	if _, err := ec.cli.Put(context.Background(), key, socket, clientv3.WithLease(resp.ID)); err != nil {
 		return err
 	}

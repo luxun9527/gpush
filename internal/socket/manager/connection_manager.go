@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/luxun9527/gpush/internal/socket/global"
+	"hash/fnv"
 )
 
 type PushType uint8
@@ -21,26 +22,24 @@ type PushJob struct {
 	uid    string
 }
 
-//选择一个合适的通道。
+// 选择一个合适的通道。
 func (pushJob PushJob) getCid() int32 {
-	var s int64
+	var s uint32
 	switch pushJob.PushType {
 	case PushAll:
 		//推送给所有用户的数据，要保证用户收到的数据是有序的只有选择同一个chan
 	case PushRoom:
 		//不同的room并发推送,但是推送到同一room中的数据有序的
-		r := []byte(pushJob.roomID)
-		for _, v := range r {
-			s += int64(v)
-		}
+
+		h := fnv.New32a()
+		h.Write([]byte(pushJob.roomID))
+		s = h.Sum32()
 	case PushPerson:
 		//不同的用户并发推送，但是用户收到的数据是有序的。
-		r := []byte(pushJob.uid)
-		for _, v := range r {
-			s += int64(v)
-		}
+		h := fnv.New32a()
+		h.Write([]byte(pushJob.uid))
+		s = h.Sum32()
 	}
-
 	return int32(s % 20)
 }
 
@@ -78,19 +77,19 @@ func InitConnectionManager() {
 
 }
 
-//将连接移除事件监听中
+// 将连接移除事件监听中
 func (c *ConnectionManager) removeEpollerConn(id int64) error {
 	i := id % 4
 	return c.Epoller[i].Remove(int(id))
 }
 
-//将连接加入到事件监听中
+// 将连接加入到事件监听中
 func (c *ConnectionManager) addEpollerConn(id int64) error {
 	i := id % 4
 	return c.Epoller[i].Add(int(id))
 }
 
-//分发数据到到所有bucket的jobchan中
+// 分发数据到到所有bucket的jobchan中
 func (c *ConnectionManager) dispatchToBucket() {
 
 	for job := range c.dispatchChan {

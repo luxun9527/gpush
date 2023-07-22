@@ -51,7 +51,7 @@ func (e *Epoller) run() {
 }
 
 func (e *Epoller) Add(fd int) error {
-	//使用et模式
+	//使用et模式 一次触发
 	return unix.EpollCtl(e.fd, syscall.EPOLL_CTL_ADD, fd, &unix.EpollEvent{Events: unix.EPOLLERR | unix.EPOLLHUP | unix.EPOLLET | unix.EPOLLRDHUP | unix.EPOLLPRI | unix.EPOLLIN, Fd: int32(fd)})
 
 }
