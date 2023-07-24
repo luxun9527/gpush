@@ -19,4 +19,4 @@ Async =true
 Json=false
 [etcd]
 endpoints=["192.168.2.99:2379"]
-keyPrefix="/proxy"
+keyPrefix="proxy"
