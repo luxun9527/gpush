@@ -21,28 +21,24 @@
    ReadBuf=200
 
 [logger]
-    # debug等级 debug info warn error
     Level ="debug"
-    #是否增加添加堆栈信息
     Stacktrace=true
-    #是否添加调用者信息
     AddCaller =true
-    #是否deubug 在输出到标准输出,和输出到文件中互斥
-    Debug =true
-    #warn级别以下的日志输出到的文件
+    Model="console"
+    CallerShip=0
     FileName ="./stdout.ws.json"
-    #warn级别以上的日志输出到文件
-    WarnFileName ="./stderr.ws.json"
-    # 日志轮转大小，单位MB，默认500MB
+    ErrorFileName ="./stderr.ws.json"
     MaxSize =100
-    # 日志轮转最大时间，单位day，默认1 day
     MaxAge =10
-    # 日志轮转个数，默认10
     MaxBackup =10
-    #是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
-    Json=false
-[etcd]
+    Async =false
+    Compress=true
+[proxyRpc]
     #etcd服务的地址
-    endpoints=["192.168.2.99:2379"]
+    endpoints=["192.168.2.159:2379"]
     #设置的key前缀
     keyPrefix="proxy"
+
+[AuthRpc.EtcdConfig]
+   endpoints=["192.168.2.159:2379"]
+   key="service_account.rpc"

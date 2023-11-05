@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+
 	gws "github.com/gobwas/ws"
 	"github.com/luxun9527/gpush/internal/socket/global"
 	"github.com/luxun9527/gpush/internal/socket/model"
@@ -68,5 +69,10 @@ var (
 		Code:    30002,
 		Message: "操作有误",
 		Detail:  "未登录",
+	}.EncodeMessage()
+	TokenValidateFailed = Response{
+		Code:    30003,
+		Message: "token验证失败",
+		Detail:  "token验证失败",
 	}.EncodeMessage()
 )

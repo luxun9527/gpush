@@ -4,3 +4,4 @@ temp
 .idea
 ./bin
 ./cmd/ws/bin
+**/bin

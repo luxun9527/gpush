@@ -2,6 +2,7 @@ package manager
 
 import (
 	"bufio"
+	"errors"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
 	"github.com/luxun9527/gpush/internal/socket/global"
@@ -83,10 +84,11 @@ func (conn *Connection) ReadMessage() {
 	for {
 		frame, err := ws.ReadFrame(conn.readBuf)
 		if err != nil {
-			if err == io.ErrUnexpectedEOF {
+			if errors.Is(err, io.ErrUnexpectedEOF) {
 				//如果是没有读完，回退到上一次读出完整数据的位置.
 				conn.readBuf.GoBack()
 			}
+			global.L.Debug("read error")
 			break
 		}
 		//更新读出上一条完整数据的位置。
@@ -144,6 +146,7 @@ func (conn *Connection) WriteLoop() {
 		select {
 		case data := <-conn.write:
 			if _, err := conn.writeBuf.Write(data); err != nil {
+				global.L.Debug("Write from read", zap.Any("err", err))
 				return
 			}
 		case <-conn.writeRate.C:
@@ -183,24 +186,24 @@ func (conn *Connection) WriteLoop() {
 //
 //}
 
-//func (conn *Connection) Write(data []byte) (int, error) {
-//	var nn int
-//	for {
-//		n, err := syscall.Write(int(conn.ID), data[nn:])
-//		if n > 0 {
-//			nn += n
-//		}
-//		if nn == len(data) {
-//			return nn, err
-//		}
-//		if err != nil {
-//			return 0, err
-//		}
-//		if n == 0 {
-//			return nn, io.ErrUnexpectedEOF
+//	func (conn *Connection) Write(data []byte) (int, error) {
+//		var nn int
+//		for {
+//			n, err := syscall.Write(int(conn.ID), data[nn:])
+//			if n > 0 {
+//				nn += n
+//			}
+//			if nn == len(data) {
+//				return nn, err
+//			}
+//			if err != nil {
+//				return 0, err
+//			}
+//			if n == 0 {
+//				return nn, io.ErrUnexpectedEOF
+//			}
 //		}
 //	}
-//}
 func (conn *Connection) Close() {
 
 	conn.closeFunc.Do(func() {
@@ -211,7 +214,7 @@ func (conn *Connection) Close() {
 
 }
 
-//是否订阅某个room
+// 是否订阅某个room
 func (conn *Connection) isSubbed(roomID string) bool {
 	conn.lock.RLock()
 	_, ok := conn.subbedRooms[roomID]

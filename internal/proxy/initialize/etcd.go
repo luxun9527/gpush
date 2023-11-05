@@ -39,6 +39,7 @@ func (ec EtcdClient) resister() error {
 		return err
 	}
 	kc, err := ec.cli.KeepAlive(context.Background(), resp.ID)
+	global.L.Debug("register to etcd ", zap.Any("key", key))
 	if err != nil {
 		return err
 	}

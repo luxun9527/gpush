@@ -8,15 +8,17 @@
 Level ="debug"
 Stacktrace=true
 AddCaller =true
-Debug =true
+Model="console"
+CallerShip=0
 FileName ="./stdout.ws.json"
-WarnFileName ="./stderr.ws.json"
+ErrorFileName ="./stderr.ws.json"
 MaxSize =100
 MaxAge =10
 MaxBackup =10
-Async =true
+Async =false
+Compress=true
 #是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
 Json=false
 [etcd]
-endpoints=["192.168.2.99:2379"]
+endpoints=["192.168.2.159:2379"]
 keyPrefix="proxy"

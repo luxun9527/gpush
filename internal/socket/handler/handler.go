@@ -2,17 +2,21 @@ package handler
 
 import (
 	"encoding/json"
+	"strings"
+
+	"github.com/go-resty/resty/v2"
 	"github.com/luxun9527/gpush/internal/socket/manager"
 	"github.com/luxun9527/gpush/internal/socket/model/request"
 	"github.com/luxun9527/gpush/internal/socket/model/response"
-	"strings"
 )
 
-//不同的操作对应不同的策略
+// 不同的操作对应不同的策略
 var _strategy = map[request.Code]HandleStrategy{
-	request.SubPublic:       SubPublic{},
-	request.UnsubPublic:     UnSubPublic{},
-	request.Login:           Login{},
+	request.SubPublic:   SubPublic{},
+	request.UnsubPublic: UnSubPublic{},
+	request.Login: Login{
+		HttpClient: resty.New(),
+	},
 	request.Logout:          LoginOut{},
 	request.SubPrivate:      SubPrivate{},
 	request.UnSubSubPrivate: UnSubPrivate{},

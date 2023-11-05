@@ -23,7 +23,7 @@ type ProxyClientManager struct {
 }
 
 func newProxyClientManager() ProxyClientManager {
-	cli, err := global.Config.EtcdConfig.BuildClient()
+	cli, err := global.Config.ProxyRpc.BuildClient()
 	if err != nil {
 		global.L.Panic("init etcd client failed", zap.Error(err))
 	}
@@ -34,7 +34,7 @@ func newProxyClientManager() ProxyClientManager {
 }
 
 func (c *ProxyClientManager) initProxyClientManager() {
-	resp, err := c.cli.Get(context.Background(), global.Config.EtcdConfig.KeyPrefix, clientv3.WithPrefix())
+	resp, err := c.cli.Get(context.Background(), global.Config.ProxyRpc.KeyPrefix, clientv3.WithPrefix())
 	if err != nil {
 		global.L.Panic("get proxy failed", zap.Error(err))
 	}
@@ -63,7 +63,7 @@ func InitProxyClientManager() {
 
 func (c *ProxyClientManager) Watch() {
 
-	for resp := range c.cli.Watch(context.Background(), global.Config.EtcdConfig.KeyPrefix, clientv3.WithPrefix()) {
+	for resp := range c.cli.Watch(context.Background(), global.Config.ProxyRpc.KeyPrefix, clientv3.WithPrefix()) {
 		for _, ev := range resp.Events {
 			switch ev.Type {
 			case mvccpb.PUT: //修改或者新增

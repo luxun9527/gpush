@@ -14,5 +14,6 @@ func main() {
 	initialize.InitGrpc()
 	initialize.InitHttpServer()
 	initialize.InitEtcd()
+
 	select {}
 }
