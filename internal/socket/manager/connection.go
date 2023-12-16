@@ -59,7 +59,7 @@ func (conn *Connection) IsLogin() bool {
 	return conn.GetUid() != ""
 }
 
-// Send 发送数据 看你的选择，如果消息很重要一定要推出去，当不可写的时候你应该要关闭连接
+// Send
 func (conn *Connection) Send(data []byte) {
 	select {
 	case conn.write <- data:
@@ -71,7 +71,7 @@ func (conn *Connection) Send(data []byte) {
 func (conn *Connection) Read(data []byte) (n int, err error) {
 	n, err = syscall.Read(int(conn.ID), data)
 	if err != nil {
-		if err == syscall.EAGAIN {
+		if errors.Is(err, syscall.EAGAIN) {
 			return 0, io.EOF
 		}
 		return 0, err
@@ -169,7 +169,7 @@ func (conn *Connection) WriteLoop() {
 	}
 }
 
-//compare
+// compare
 //func (conn *Connection) WriteLoop() {
 //	defer func() {
 //		if err := recover(); err != nil {

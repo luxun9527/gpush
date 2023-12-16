@@ -8,7 +8,7 @@
 Level ="debug"
 Stacktrace=true
 AddCaller =true
-Model="console"
+Mode="console"
 CallerShip=0
 FileName ="./stdout.ws.json"
 ErrorFileName ="./stderr.ws.json"

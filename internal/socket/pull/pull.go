@@ -130,11 +130,11 @@ func (pc *proxyClient) pullDataFromProxy() error {
 				}
 				message := model.NewMessage(gws.OpText, data.Data)
 				var messageData []byte
-				if global.Config.Connection.IsCompress {
-					messageData, err = message.ToCompressBytes()
-				} else {
-					messageData, err = message.ToBytes()
-				}
+				//if global.Config.Connection.IsCompress {
+				//	messageData, err = message.ToCompressBytes()
+				//} else {
+				messageData, err = message.ToBytes()
+				//}
 				if err != nil {
 					global.L.Error("init message failed", zap.Error(err))
 					continue

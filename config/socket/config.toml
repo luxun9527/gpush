@@ -16,15 +16,15 @@
    #是否压缩 使用defalte协议压缩
    IsCompress=false
    #写缓存的大小
-   WriteBuf=100
+   WriteBuf=200
    #读缓存的大小，最后设置成最大消息的大小
    ReadBuf=200
 
 [logger]
-    Level ="debug"
+    Level ="error"
     Stacktrace=true
     AddCaller =true
-    Model="console"
+    Mode="console"
     CallerShip=0
     FileName ="./stdout.ws.json"
     ErrorFileName ="./stderr.ws.json"
