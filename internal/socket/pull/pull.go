@@ -11,8 +11,6 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"strings"
-
 	"time"
 )
 
@@ -35,10 +33,12 @@ func newProxyClientManager() ProxyClientManager {
 
 func (c *ProxyClientManager) initProxyClientManager() {
 	resp, err := c.cli.Get(context.Background(), global.Config.ProxyRpc.KeyPrefix, clientv3.WithPrefix())
+	global.L.Info("get proxy", zap.Int("proxy num", len(resp.Kvs)))
 	if err != nil {
 		global.L.Panic("get proxy failed", zap.Error(err))
 	}
 	for _, v := range resp.Kvs {
+		global.L.Info("get proxy success", zap.Int("proxy num", len(resp.Kvs)), zap.String("proxy addr", string(v.Value)), zap.String("key", string(v.Key)))
 		ctx, cancel := context.WithCancel(context.Background())
 		pc := &proxyClient{
 			cancel: cancel,
@@ -49,8 +49,9 @@ func (c *ProxyClientManager) initProxyClientManager() {
 			global.L.Error("init proxy failed ", zap.Error(err))
 			continue
 		}
-		c.proxyClients[string(v.Value)] = pc
+		c.proxyClients[string(v.Key)] = pc
 	}
+
 	go c.Watch()
 
 }
@@ -78,17 +79,13 @@ func (c *ProxyClientManager) Watch() {
 					global.L.Error("init proxy failed ", zap.Error(err))
 					continue
 				}
-				c.proxyClients[string(ev.Kv.Value)] = pc
+				c.proxyClients[string(ev.Kv.Key)] = pc
 			case mvccpb.DELETE: //删除
-				global.L.Info("delete etcd client", zap.Any("data", string(ev.Kv.Value)))
-				k := strings.Split(string(ev.Kv.Key), "-")
-				if len(k) < 2 {
-					continue
-				}
-				pc, ok := c.proxyClients[k[1]]
+				global.L.Info("delete etcd client", zap.Any("value", string(ev.Kv.Value)), zap.Any("key", string(ev.Kv.Key)))
+				pc, ok := c.proxyClients[string(ev.Kv.Key)]
 				if ok {
 					pc.cancel()
-					delete(c.proxyClients, k[1])
+					delete(c.proxyClients, string(ev.Kv.Key))
 				}
 			}
 		}
