@@ -21,14 +21,11 @@ type AuthSuccess struct {
 	Username string `json:"username"`
 }
 
-const Url = "http://192.168.2.138:20014/account/v1/validate_token"
-
 func (l Login) Handle(r request.Message, conn *manager.Connection) {
-	//todo 认证
 	global.L.Debug("receive login req", zap.Any("data", r))
 	resp, err := l.HttpClient.R().
 		SetBody(gin.H{"token": r.Data}).
-		Post(Url)
+		Post(global.Config.AuthUrl)
 	if err != nil {
 		global.L.Error("http auth client failed", zap.Error(err))
 		conn.Send(response.TokenValidateFailed)
@@ -36,6 +33,7 @@ func (l Login) Handle(r request.Message, conn *manager.Connection) {
 	}
 	var data gin.H
 	if err := json.Unmarshal(resp.Body(), &data); err != nil {
+		global.L.Error("json unmarshal failed", zap.Error(err))
 		conn.Send(response.TokenValidateFailed)
 		return
 	}

@@ -1,9 +1,12 @@
 package config
 
-import "github.com/luxun9527/gpush/internal/pkg"
+import (
+	"github.com/luxun9527/gpush/internal/pkg"
+	"github.com/luxun9527/zaplog"
+)
 
 type Config struct {
 	Server     Server
-	Logger     pkg.LoggerConfig
+	Logger     zaplog.Config
 	EtcdConfig pkg.EtcdConfig `mapstructure:"etcd"`
 }

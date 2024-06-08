@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	"github.com/gorilla/websocket"
-	"go.uber.org/atomic"
 	"log"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"go.uber.org/atomic"
 )
 
 var (

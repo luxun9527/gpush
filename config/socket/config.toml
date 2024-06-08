@@ -1,4 +1,5 @@
 
+authUrl = "http://192.168.2.109:20014/account/v1/validate_token"
 
 [server]
     port="9992"
@@ -20,25 +21,33 @@
    #读缓存的大小，最后设置成最大消息的大小
    ReadBuf=200
 
-[logger]
-    Level ="error"
-    Stacktrace=true
-    AddCaller =true
-    Mode="console"
-    CallerShip=0
-    FileName ="./stdout.ws.json"
-    ErrorFileName ="./stderr.ws.json"
-    MaxSize =100
-    MaxAge =10
-    MaxBackup =10
-    Async =false
-    Compress=true
+[Logger]
+Name = "ws-proxy"
+Level = "debug"
+Stacktrace = true
+AddCaller = true
+CallShip = 3
+Mode = "console"
+Json = false
+MaxSize = 0
+MaxAge = 0
+MaxBackup = 0
+Async = false
+Compress = false
+Console = false
+Color = true
+IsReport = false
+
+[Logger.ReportConfig]
+Type = "lark"
+ChatID = 0
+FlushSec = 3
+MaxCount = 20
+Level = "warn"
+
 [proxyRpc]
     #etcd服务的地址
     endpoints=["192.168.2.159:2379"]
     #设置的key前缀
     keyPrefix="proxy"
 
-[AuthRpc.EtcdConfig]
-   endpoints=["192.168.2.159:2379"]
-   key="service_account.rpc"

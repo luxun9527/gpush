@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #inputArea {
+            display: flex;
+        }
+        #inputArea input {
+            flex: 1;
+            padding: 10px;
+        }
+        #inputArea button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>WebSocket Client</h1>
+<div id="messages"></div>
+<div id="inputArea">
+    <input type="text" id="messageInput" placeholder="Enter message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const wsUrl = "ws://192.168.2.159:9992/ws";  // 替换为你的WebSocket地址
+        const socket = new WebSocket(wsUrl);
+
+        const messagesDiv = document.getElementById("messages");
+        const messageInput = document.getElementById("messageInput");
+
+        socket.onopen = () => {
+            console.log("Connected to WebSocket server");
+            addMessage("Connected to WebSocket server");
+        };
+
+        socket.onmessage = (event) => {
+            console.log("Message from server ", event.data);
+            addMessage("Server: " + event.data);
+        };
+
+        socket.onclose = () => {
+            console.log("Disconnected from WebSocket server");
+            addMessage("Disconnected from WebSocket server");
+        };
+
+        socket.onerror = (error) => {
+            console.log("WebSocket error: ", error);
+            addMessage("WebSocket error: " + error.message);
+        };
+
+        window.sendMessage = () => {
+            const message = messageInput.value;
+            if (message && socket.readyState === WebSocket.OPEN) {
+                socket.send(message);
+                addMessage("You: " + message);
+                messageInput.value = "";
+            }
+        };
+
+        function addMessage(message) {
+            const messageElement = document.createElement("div");
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    });
+</script>
+</body>
+</html>

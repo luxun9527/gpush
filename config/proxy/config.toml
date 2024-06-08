@@ -4,21 +4,30 @@
     PullPort=":10067"
     HttpPort=":10068"
 
-[logger]
-Level ="debug"
-Stacktrace=true
-AddCaller =true
-Mode="console"
-CallerShip=0
-FileName ="./stdout.ws.json"
-ErrorFileName ="./stderr.ws.json"
-MaxSize =100
-MaxAge =10
-MaxBackup =10
-Async =false
-Compress=true
-#是否 输出json格式的数据，JSON格式相对于console格式，不方便阅读，但是对机器更加友好
-Json=false
+[Logger]
+Name = "ws-proxy"
+Level = "debug"
+Stacktrace = true
+AddCaller = true
+CallShip = 3
+Mode = "console"
+Json = false
+MaxSize = 0
+MaxAge = 0
+MaxBackup = 0
+Async = false
+Compress = false
+Console = false
+Color = true
+IsReport = false
+
+[Logger.ReportConfig]
+Type = "lark"
+ChatID = 0
+FlushSec = 3
+MaxCount = 20
+Level = "warn"
+
 [etcd]
 endpoints=["192.168.2.159:2379"]
 keyPrefix="proxy"
