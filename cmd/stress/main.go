@@ -21,11 +21,11 @@ func main() {
 	// /root/ws/cmd/stress/stress --count=5000 --url=ws://192.168.2.99:9992/ws
 	var count int64
 
-	flag.StringVar(&url, "url", "ws://192.168.2.159:9992/ws", "url")
+	flag.StringVar(&url, "url", "ws://47.113.223.16:9993/ws", "url")
 	flag.Int64Var(&count, "count", 5000, "count")
 	flag.Parse()
 	for i := int64(0); i < count; i++ {
-		time.Sleep(time.Microsecond)
+		time.Sleep(time.Microsecond * 10)
 		go connect(url)
 	}
 	go func() {

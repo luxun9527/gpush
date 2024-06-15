@@ -5,3 +5,4 @@ temp
 ./bin
 ./cmd/ws/bin
 **/bin
+cmd/stress/stress
