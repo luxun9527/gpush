@@ -2,17 +2,14 @@ package manager
 
 import (
 	"bufio"
-	"errors"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
 	"github.com/luxun9527/gpush/internal/socket/global"
 	"github.com/luxun9527/gpush/tools"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
-	"io"
 	"net"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -39,9 +36,8 @@ type Connection struct {
 	writeBuf    *bufio.Writer
 	closeFunc   sync.Once
 	//读数据到这个buf中
-	readBuf       *tools.Reader
-	lastHeartbeat time.Time
-	uid           atomic.String
+	readBuf *bufio.Reader
+	uid     atomic.String
 }
 
 // SetUid 设置uid
@@ -67,32 +63,15 @@ func (conn *Connection) Send(data []byte) {
 	}
 
 }
-
-func (conn *Connection) Read(data []byte) (n int, err error) {
-	n, err = syscall.Read(int(conn.ID), data)
-	if err != nil {
-		if errors.Is(err, syscall.EAGAIN) {
-			return 0, io.EOF
-		}
-		return 0, err
-	}
-	return n, nil
-}
-
 func (conn *Connection) ReadMessage() {
 
 	for {
 		frame, err := ws.ReadFrame(conn.readBuf)
 		if err != nil {
-			if errors.Is(err, io.ErrUnexpectedEOF) {
-				//如果是没有读完，回退到上一次读出完整数据的位置.
-				conn.readBuf.GoBack()
-			}
-			global.L.Debug("read error")
+			global.L.Debug("read error", zap.Error(err))
 			break
 		}
 		//更新读出上一条完整数据的位置。
-		conn.readBuf.UpdateLastMessagePos()
 		if frame.Header.OpCode == ws.OpClose {
 			conn.Close()
 			return
@@ -101,6 +80,7 @@ func (conn *Connection) ReadMessage() {
 		if global.Config.Connection.IsCompress {
 			frame, err = wsflate.DecompressFrame(frame)
 			if err != nil {
+				global.L.Debug("decompress frame read error", zap.Error(err))
 				return
 			}
 		}
@@ -109,101 +89,43 @@ func (conn *Connection) ReadMessage() {
 	}
 
 }
-
 func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 	ID := tools.WebsocketFD(conn)
 
 	nc := &Connection{
-		Conn:          conn,
-		ip:            conn.RemoteAddr().String(),
-		ID:            ID,
-		write:         make(chan []byte, 50),
-		subbedRooms:   make(map[string]RoomType, 5),
-		handlerFunc:   f,
-		writeRate:     time.NewTicker(time.Millisecond * time.Duration(global.Config.Connection.WriteRate)),
-		lastHeartbeat: time.Now(),
-		writeBuf:      bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf),
+		Conn:        conn,
+		ip:          conn.RemoteAddr().String(),
+		ID:          ID,
+		write:       make(chan []byte, 50),
+		subbedRooms: make(map[string]RoomType, 5),
+		handlerFunc: f,
+		writeRate:   time.NewTicker(time.Millisecond * time.Duration(global.Config.Connection.WriteRate)),
+		writeBuf:    bufio.NewWriterSize(conn, global.Config.Connection.WriteBuf),
+		readBuf:     bufio.NewReaderSize(conn, 4096),
 	}
-	nc.readBuf = tools.NewReaderSize(nc, global.Config.Connection.ReadBuf)
 	CM.AddConnection(nc)
-	if err := CM.addEpollerConn(ID); err != nil {
-		global.L.Error("add conn to epoller failed", zap.Error(err))
-		return nil, err
-	}
-
+	go nc.ReadMessage()
 	go nc.WriteLoop()
 	return nc, nil
 }
 
+// compare
 func (conn *Connection) WriteLoop() {
 	defer func() {
 		if err := recover(); err != nil {
-			global.L.Debug("recover from read", zap.Any("err", err))
+			global.L.Debug("recover from write", zap.Any("err", err))
 		}
 		conn.Close()
 	}()
-	for {
-		select {
-		case data := <-conn.write:
-			if _, err := conn.writeBuf.Write(data); err != nil {
-				global.L.Debug("Write from read", zap.Any("err", err))
-				return
-			}
-		case <-conn.writeRate.C:
-			//如果关闭就返回
-			if conn.isClosed {
-				return
-			}
-			//心跳超时
-			if conn.lastHeartbeat.Add(time.Millisecond * time.Duration(global.Config.Connection.TimeOut)).Before(time.Now()) {
-				return
-			}
-			//写到连接中
-			if conn.writeBuf.Available() > 0 {
-				if err := conn.writeBuf.Flush(); err != nil {
-					return
-				}
-			}
 
+	for data := range conn.write {
+		if _, err := conn.Write(data); err != nil {
+			return
 		}
 	}
+
 }
 
-// compare
-//func (conn *Connection) WriteLoop() {
-//	defer func() {
-//		if err := recover(); err != nil {
-//			global.L.Debug("recover from read", zap.Any("err", err))
-//		}
-//		conn.Close()
-//	}()
-//
-//	for data := range conn.write {
-//		if _, err := conn.Write(data); err != nil {
-//			return
-//		}
-//	}
-//
-//}
-
-//	func (conn *Connection) Write(data []byte) (int, error) {
-//		var nn int
-//		for {
-//			n, err := syscall.Write(int(conn.ID), data[nn:])
-//			if n > 0 {
-//				nn += n
-//			}
-//			if nn == len(data) {
-//				return nn, err
-//			}
-//			if err != nil {
-//				return 0, err
-//			}
-//			if n == 0 {
-//				return nn, io.ErrUnexpectedEOF
-//			}
-//		}
-//	}
 func (conn *Connection) Close() {
 
 	conn.closeFunc.Do(func() {
@@ -238,5 +160,5 @@ func (conn *Connection) unSubAll(roomID string) {
 }
 
 func (conn *Connection) KeepAlive() {
-	conn.lastHeartbeat = time.Now().Add(time.Millisecond * time.Duration(global.Config.Connection.TimeOut))
+	conn.Conn.SetReadDeadline(time.Now().Add(time.Second * 10))
 }

@@ -24,7 +24,7 @@ func (b *Bucket) Count() int {
 	return count
 }
 
-//处理收到的数据
+// 处理收到的数据
 func (b *Bucket) handleMessage(c chan *PushJob) {
 	for job := range c {
 		switch job.PushType {
@@ -75,10 +75,7 @@ func NewBucket(id int32) *Bucket {
 	}
 	messageChan := make([]chan *PushJob, 20)
 	cs := make([]chan int, 10)
-	for i := 0; i < len(cs); i++ {
-		cs[i] = make(chan int, 10)
-		go bucket.notifyReadMessage(cs[i])
-	}
+
 	bucket.notify = cs
 	for i := 0; i < len(messageChan); i++ {
 		messageChan[i] = make(chan *PushJob, 500)
@@ -86,19 +83,6 @@ func NewBucket(id int32) *Bucket {
 	}
 	bucket.messageChan = messageChan
 	return bucket
-}
-
-//读取连接读取
-func (b *Bucket) notifyReadMessage(fds chan int) {
-	for fd := range fds {
-		b.id2ConnLock.RLock()
-		conn, ok := b.id2Conn[int64(fd)]
-		b.id2ConnLock.RUnlock()
-		if !ok {
-			continue
-		}
-		conn.ReadMessage()
-	}
 }
 
 // AddConn 添加连接
@@ -151,7 +135,7 @@ func (b *Bucket) leavePublicRoom(roomID string, conn *Connection) {
 	}
 }
 
-//pushAll 推送给所有用户
+// pushAll 推送给所有用户
 func (b *Bucket) pushAll(job *PushJob) {
 	b.id2ConnLock.RLock()
 	defer b.id2ConnLock.RUnlock()
@@ -161,7 +145,7 @@ func (b *Bucket) pushAll(job *PushJob) {
 
 }
 
-//pushRoom 推送给指定的订阅
+// pushRoom 推送给指定的订阅
 func (b *Bucket) pushRoom(job *PushJob) {
 	b.roomsLock.RLock()
 	room, ok := b.rooms[job.roomID]
@@ -172,7 +156,7 @@ func (b *Bucket) pushRoom(job *PushJob) {
 	room.Push(job.data)
 }
 
-//pushPerson 推送给个人
+// pushPerson 推送给个人
 func (b *Bucket) pushPerson(job *PushJob) {
 	// 这个锁的粒度比较大。
 	b.loggedLock.RLock()

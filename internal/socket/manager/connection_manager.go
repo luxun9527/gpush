@@ -46,7 +46,6 @@ func (pushJob PushJob) getCid() int32 {
 type ConnectionManager struct {
 	buckets      []*Bucket
 	dispatchChan chan *PushJob // 待分发消息队列
-	Epoller      []*Epoller
 }
 
 func GetConnectionInfo() int {
@@ -67,31 +66,12 @@ func InitConnectionManager() {
 		//初始化所有bucket
 		CM.buckets[i] = NewBucket(int32(i))
 	}
-	epollers := make([]*Epoller, 4)
-	for i := 0; i < 4; i++ {
-		epollers[i] = NewEpoller()
-	}
-	CM.Epoller = epollers
 	//分发数据到所有bucket中不同chan
 	go CM.dispatchToBucket()
-
-}
-
-// 将连接移除事件监听中
-func (c *ConnectionManager) removeEpollerConn(id int64) error {
-	i := id % 4
-	return c.Epoller[i].Remove(int(id))
-}
-
-// 将连接加入到事件监听中
-func (c *ConnectionManager) addEpollerConn(id int64) error {
-	i := id % 4
-	return c.Epoller[i].Add(int(id))
 }
 
 // 分发数据到到所有bucket的jobchan中
 func (c *ConnectionManager) dispatchToBucket() {
-
 	for job := range c.dispatchChan {
 		cid := job.getCid()
 		for _, v := range c.buckets {
@@ -107,7 +87,6 @@ func (c *ConnectionManager) PushRoom(room string, data []byte) {
 		roomID:   room,
 		data:     data,
 	}
-
 	c.dispatchChan <- job
 }
 
@@ -204,7 +183,6 @@ func (c *ConnectionManager) getBucket(connID int64) *Bucket {
 
 // LevelAll 离开所有保存了连接的地方,当连接退出关闭的时候
 func (c *ConnectionManager) LevelAll(conn *Connection) {
-	c.removeEpollerConn(conn.ID)
 	c.DelConnection(conn)
 	conn.lock.RLock()
 	defer conn.lock.RUnlock()
