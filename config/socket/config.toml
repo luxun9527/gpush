@@ -15,7 +15,7 @@ authUrl = "http://192.168.2.109:20014/account/v1/validate_token"
   #连接超时时间单位毫秒
    TimeOut=200000000
    #是否压缩 使用defalte协议压缩
-   IsCompress=false
+   IsCompress=true
    #写缓存的大小
    WriteBuf=200
    #读缓存的大小，最后设置成最大消息的大小

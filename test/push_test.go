@@ -21,13 +21,14 @@ func TestPush(t *testing.T) {
 	var c atomic.Int64
 	client := pb.NewProxyClient(conn)
 
-	data := []byte{ //'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-		//'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+	data := []byte{
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'}
 	go func() {
 		for {
