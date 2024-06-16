@@ -44,8 +44,11 @@ func main() {
 	time.Sleep(time.Hour)
 }
 func connect(url string) {
-	c := websocket.DefaultDialer
-	conn, _, err := c.Dial(url, nil)
+	dialer := websocket.Dialer{
+		EnableCompression: true, // 启用压缩
+		Subprotocols:      []string{"permessage-deflate"},
+	}
+	conn, _, err := dialer.Dial(url, nil)
 	if err != nil {
 		log.Printf("connect failed err = %v", err.Error())
 		return

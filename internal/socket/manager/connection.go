@@ -110,6 +110,31 @@ func NewConnection(conn net.Conn, f HandlerFunc) (*Connection, error) {
 }
 
 // compare
+//func (conn *Connection) WriteLoop() {
+//	defer func() {
+//		if err := recover(); err != nil {
+//			global.L.Debug("recover from write", zap.Any("err", err))
+//		}
+//		conn.Close()
+//	}()
+//
+//	for {
+//		select {
+//		case data := <-conn.write:
+//			if _, err := conn.writeBuf.Write(data); err != nil {
+//				global.L.Debug("write data error", zap.Error(err))
+//				return
+//			}
+//		case <-conn.writeRate.C:
+//			if err := conn.writeBuf.Flush(); err != nil {
+//				global.L.Debug("flush data error", zap.Error(err))
+//				return
+//			}
+//		}
+//	}
+//
+//}
+
 func (conn *Connection) WriteLoop() {
 	defer func() {
 		if err := recover(); err != nil {
@@ -119,15 +144,9 @@ func (conn *Connection) WriteLoop() {
 	}()
 
 	for {
-		select {
-		case data := <-conn.write:
-			if _, err := conn.writeBuf.Write(data); err != nil {
-				global.L.Debug("write data error", zap.Error(err))
-				return
-			}
-		case <-conn.writeRate.C:
-			if err := conn.writeBuf.Flush(); err != nil {
-				global.L.Debug("flush data error", zap.Error(err))
+		for data := range conn.write {
+			if _, err := conn.Conn.Write(data); err != nil {
+				global.L.Error("write data error", zap.Error(err))
 				return
 			}
 		}
