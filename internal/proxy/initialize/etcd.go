@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/luxun9527/gpush/internal/proxy/global"
 	"github.com/luxun9527/gpush/tools"
+	"github.com/luxun9527/zlog"
 	"github.com/spf13/cast"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
@@ -17,13 +18,13 @@ type EtcdClient struct {
 func InitEtcd() {
 	cli, err := global.Config.EtcdConfig.BuildClient()
 	if err != nil {
-		global.L.Panic("init etcd client failed", zap.Error(err))
+		zlog.Panic("init etcd client failed", zap.Error(err))
 	}
 	ec := &EtcdClient{
 		cli: cli,
 	}
 	if err := ec.resister(); err != nil {
-		global.L.Panic("init etcd client failed", zap.Error(err))
+		zlog.Panic("init etcd client failed", zap.Error(err))
 	}
 }
 func (ec EtcdClient) resister() error {
@@ -39,22 +40,22 @@ func (ec EtcdClient) resister() error {
 		return err
 	}
 	kc, err := ec.cli.KeepAlive(context.Background(), resp.ID)
-	global.L.Debug("register to etcd ", zap.Any("key", key))
+	zlog.Debug("register to etcd ", zap.Any("key", key))
 	if err != nil {
 		return err
 	}
 	go func() {
 		if err := ec.listenLease(kc); err != nil {
-			global.L.Warn("close client fail", zap.Error(err))
+			zlog.Warn("close client fail", zap.Error(err))
 		}
 	}()
 	return nil
 }
 func (ec EtcdClient) listenLease(response <-chan *clientv3.LeaseKeepAliveResponse) error {
 	for _ = range response {
-		//		global.L.Info("receive", zap.Any("r", r.ID))
+		//		zlog.Info("receive", zap.Any("r", r.ID))
 	}
-	global.L.Warn("listen lease chan finish", zap.Any("leaseID", ec.leaseID))
+	zlog.Warn("listen lease chan finish", zap.Any("leaseID", ec.leaseID))
 	return ec.close()
 }
 func (ec EtcdClient) close() error {

@@ -2,10 +2,10 @@ package global
 
 import (
 	"github.com/luxun9527/gpush/internal/socket/config"
-	"go.uber.org/zap"
+	"github.com/luxun9527/gpush/internal/socket/stat"
 )
 
 var (
-	L      *zap.Logger
-	Config config.Config
+	Config     config.Config
+	Prometheus *stat.PrometheusStat
 )

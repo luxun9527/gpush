@@ -50,11 +50,3 @@ func TestPush(t *testing.T) {
 	time.Sleep(time.Second * 10)
 
 }
-
-func TestServer(t *testing.T) {
-
-}
-
-func TestClient(t *testing.T) {
-
-}

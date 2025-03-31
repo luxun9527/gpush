@@ -8,3 +8,5 @@ go build -o "$dir/bin/socket"
 cd "$dir/cmd/proxy"
 go build -o "$dir/bin/proxy"
 
+cd "$dir/cmd/stress"
+go build -o "$dir/bin/stress"

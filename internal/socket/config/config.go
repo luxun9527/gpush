@@ -2,13 +2,13 @@ package config
 
 import (
 	"github.com/luxun9527/gpush/internal/pkg"
-	"github.com/luxun9527/zaplog"
+	"github.com/luxun9527/zlog"
 )
 
 type Config struct {
 	Bucket     Bucket         `mapstructure:"bucket"`
 	Server     Server         `mapstructure:"server"`
-	Logger     zaplog.Config  `mapstructure:"logger"`
+	Logger     zlog.Config    `mapstructure:"logger"`
 	Proxy      Proxy          `mapstructure:"proxy"`
 	Connection Connection     `mapstructure:"connection"`
 	ProxyRpc   pkg.EtcdConfig `mapstructure:"ProxyRpc"`

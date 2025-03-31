@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"github.com/luxun9527/gpush/internal/proxy/global"
 	pb "github.com/luxun9527/gpush/proto"
+	"github.com/luxun9527/zlog"
 	"go.uber.org/zap"
 	"sync"
 )
@@ -44,7 +44,7 @@ func (p *ProxyApi) PushSocketData() {
 			p.reqConn.Range(func(req, _ any) bool {
 				conn := req.(*SocketConnection)
 				if err := conn.req.Send(data); err != nil {
-					global.L.Error("send message failed", zap.Error(err))
+					zlog.Error("send message failed", zap.Error(err))
 					conn.cancel()
 					p.reqConn.Delete(req)
 				}

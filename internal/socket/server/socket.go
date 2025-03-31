@@ -8,17 +8,21 @@ import (
 	"github.com/luxun9527/gpush/internal/socket/handler"
 	"github.com/luxun9527/gpush/internal/socket/manager"
 	"github.com/luxun9527/gpush/internal/socket/model/response"
+	"github.com/luxun9527/zlog"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
 // InitHttpServer 初始化http服务
 func InitHttpServer() {
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.GET("/ws", connect)
-	r.GET("/stats", stats)
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	go func() {
 		if err := r.Run("0.0.0.0:" + global.Config.Server.Port); err != nil {
-			global.L.Panic("init http server failed", zap.Error(err))
+			zlog.Panic("init http server failed", zap.Error(err))
 		}
 	}()
 
@@ -33,12 +37,12 @@ func connect(c *gin.Context) {
 	}
 	conn, _, _, err := httpUpgrade.Upgrade(c.Request, c.Writer)
 	if err != nil {
-		global.L.Error("upgrade failed", zap.Error(err))
+		zlog.Error("upgrade failed", zap.Error(err))
 		return
 	}
 	_, err = conn.Write(response.ConnectSuccess)
 	if err != nil {
-		global.L.Error("write data to connect failed", zap.Error(err))
+		zlog.Error("write data to connect failed", zap.Error(err))
 		return
 	}
 	connection, err := manager.NewConnection(conn, handler.Handle)

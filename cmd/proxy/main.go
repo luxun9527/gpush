@@ -9,11 +9,6 @@ func main() {
 	var addr string
 	flag.StringVar(&addr, "config", "config/proxy/config.toml", "配置文件路径")
 	flag.Parse()
-	initialize.InitConfig(addr)
-	initialize.InitLogger()
-	initialize.InitGrpc()
-	initialize.InitHttpServer()
-	initialize.InitEtcd()
-
+	initialize.Init(addr)
 	select {}
 }
