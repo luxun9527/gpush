@@ -81,7 +81,7 @@ func (conn *Connection) Read(data []byte) (n int, err error) {
 }
 
 func (conn *Connection) ReadMessage() {
-
+	defer conn.Close()
 	for {
 		frame, err := ws.ReadFrame(conn.readBuf)
 		if err != nil {
@@ -239,10 +239,10 @@ func (conn *Connection) WriteLoop() {
 func (conn *Connection) Close() {
 
 	conn.closeFunc.Do(func() {
+		global.Prometheus.WsConnections.WithLabelValues().Dec()
 		CM.LevelAll(conn)
 		conn.Conn.Close()
 		conn.isClosed = true
-		global.Prometheus.WsConnections.WithLabelValues().Dec()
 	})
 
 }

@@ -10,19 +10,29 @@ import (
 )
 
 var (
-	currentReceived atomic.Int64
-	lastTime        int64
-	lastReceived    int64
+	currentReceived      atomic.Int64
+	currentReceivedBytes atomic.Int64
+	lastTime             int64
+	lastReceived         int64
+	lastReceivedBytes    int64
+)
+var (
+	enableCompress bool
+	count          int64
+	url            string
 )
 
-func main() {
-	var url string
-	// /root/ws/cmd/stress/stress --count=5000 --url=ws://192.168.2.99:9992/ws
-	var count int64
-
+func init() {
 	flag.StringVar(&url, "url", "ws://192.168.2.159:9995/ws", "url")
 	flag.Int64Var(&count, "count", 5000, "count")
+	flag.BoolVar(&enableCompress, "ec", false, "是否开启压缩")
 	flag.Parse()
+}
+
+func main() {
+
+	// /root/ws/cmd/stress/stress --count=5000 --url=ws://192.168.2.99:9992/ws
+
 	for i := int64(0); i < count; i++ {
 		time.Sleep(time.Microsecond)
 		go connect(url)
@@ -30,21 +40,27 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Second)
-			now := time.Now().UnixMilli()
+			now := time.Now().Unix()
 			cr := currentReceived.Load()
+			crb := currentReceivedBytes.Load()
 			s := now - lastTime
 			receivedLastSecond := (cr - lastReceived) / s
+			receivedBytesPerSec := crb - lastReceivedBytes
 			lastReceived = cr
 			lastTime = now
-			log.Printf("当前收到 %v条 平均每毫秒收到 %v条\n", cr, receivedLastSecond)
+			lastReceivedBytes = crb
+			log.Printf("当前收到 %v条 平均每秒收到 %v条 平均每秒收到%v字节数\n", cr, receivedLastSecond, receivedBytesPerSec)
 		}
 
 	}()
 	time.Sleep(time.Hour)
 }
 func connect(url string) {
-	c := websocket.DefaultDialer
-	conn, _, err := c.Dial(url, nil)
+	dialer := websocket.Dialer{}
+	if enableCompress {
+		dialer.EnableCompression = true
+	}
+	conn, _, err := dialer.Dial(url, nil)
 	if err != nil {
 		log.Printf("connect failed err = %v", err.Error())
 		return
@@ -52,8 +68,11 @@ func connect(url string) {
 	ReadMessage(conn)
 }
 func ReadMessage(conn *websocket.Conn) {
-	//conn.EnableWriteCompression(true)
-	//conn.SetCompressionLevel(9)
+	if enableCompress {
+		conn.EnableWriteCompression(true)
+		conn.SetCompressionLevel(9)
+	}
+
 	conn.WriteJSON(map[string]interface{}{"code": 1, "topic": "test"})
 	//go func() {
 	//
@@ -70,6 +89,7 @@ func ReadMessage(conn *websocket.Conn) {
 			return
 		}
 		currentReceived.Inc()
+		currentReceivedBytes.Add(int64(len(data)))
 
 	}
 }

@@ -6,7 +6,7 @@ authUrl = "http://192.168.2.109:20014/account/v1/validate_token"
 
 [bucket]
     #分区数量
-    BucketCount =512
+    BucketCount =128
     #分发chan的长度
     DispatchChanSize =100
 [connection]
@@ -16,16 +16,15 @@ authUrl = "http://192.168.2.109:20014/account/v1/validate_token"
    ReadBuf=1024
 
    #是否开启写缓存
-   EnableWriteBuffer=true
+   EnableWriteBuffer=false
    #写频率毫秒
    WriteRate=500
     #写缓存的大小
    WriteBuf=200
     #是否开启epoller
-   EableEpoller=false
-
-#是否压缩 使用defalte协议压缩
-IsCompress=false
+   EableEpoller=true
+    #是否压缩 使用defalte协议压缩
+    IsCompress=false
 
 [logger]
 level = "debug"          # 日志等级 debug info warn error

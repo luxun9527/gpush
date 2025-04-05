@@ -11,21 +11,43 @@
 
 3、写的时候使用缓存，批量定时写入，减少系统调用、协程的调度。
 
-![](https://i.niupic.com/images/2023/07/24/byIg.jpg)
+![image-20250405221017584](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405221017584.png)
 
 ### 1、epoll
 
-1、实现参考，https://github.com/eranyanay/1m-go-websockets   只适用在写多读少的情况下，并且读之后的业务耗时的操作不要太频繁。
+1、实现参考，https://github.com/eranyanay/1m-go-websockets   只适用在写多读少的情况下，并且读之后的业务耗时的操作不要太频繁，可以使用epoll避免创建读的协程。
 
 这里读的时候要考虑到半消息的情况，https://studygolang.com/topics/13377  当收到websocket数据包不全的情况下，go net官方库当不可读的时候是会阻塞的。如果这里如果我们也阻塞的的话，那就要等他读完我们才能处理其他的。
 
 **解决方法**：如果如果没有读完的，就缓存起来，读的起始位置就回退到上次读出完整数据的位置，这里需要自己diy bufio.Reader 缓存没有读完的消息。
 
+**除非你的单个实例的连接数非常大，可以做这个优化，否则感觉每啥必要。**
+
+![image-20250405212937803](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405212937803.png)
+
+![image-20250405215456563](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405215456563.png)
+
+
+
 ### 2、使用写缓存
 
-如果在小包特别多得情况下，直接发送会有很多系统调用,gmp模型，每一次系统调用go都会有一次调度 会消耗cpu。在实时性要求不高的情况下，我们可以批量定时写入。
+压力测试，在本地没有带宽限制的情况，我们的瓶颈是cpu,我们通过pprof分析，是直接写入到连接那一步cpu消耗大，如果在小包特别多得情况下，直接发送会有很多系统调用,gmp模型，每一次系统调用go都会有一次调度 会消耗cpu。在实时性要求不高的情况下，我们可以批量定时写入。
 
 得益于github.com/gobwas/ws 提供的非常灵活的用法，我们可以暂时将我们要写的数据转为websocket数据包缓存起来， 批量定时写入。此外提前encode websocket数据包，也可以避免每一个连接发送的时候都去encode 一遍websocket数据包,提高效率。
+
+**实际测试5000连接，启用批量推送，在cpu负载满的情况下，性能有较大提升，后面是开启批量推送**
+
+![image-20250405210004732](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405210004732.png)
+
+#### 2.1启用压缩
+
+启用压缩客户端的cpu消耗会增加，对服务器没有影响，服务端的数据是提前处理的，不用每次推送都去执行压缩，由于压力测试是在自己的客户端服务端都是跑在自己的电脑上
+
+
+
+![image-20250405212352638](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405212352638.png)
+
+
 
 ### 3、分片存储连接
 
