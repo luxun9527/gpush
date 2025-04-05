@@ -11,7 +11,7 @@
 
 3、写的时候使用缓存，批量定时写入，减少系统调用、协程的调度。
 
-![image-20250405221017584](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405221017584.png)
+![image.png](https://cdn.nlark.com/yuque/0/2025/png/12466223/1743862861672-38882091-085b-4d5b-9bdb-694955f072de.png?x-oss-process=image%2Fformat%2Cwebp)
 
 ### 1、epoll
 
@@ -23,9 +23,11 @@
 
 **除非你的单个实例的连接数非常大，可以做这个优化，否则感觉每啥必要。**
 
-![image-20250405212937803](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405212937803.png)
 
-![image-20250405215456563](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405215456563.png)
+
+![image.png](https://cdn.nlark.com/yuque/0/2025/png/12466223/1743862901436-b10f6e9d-435c-45c5-8e9a-9e314e6f463d.png?x-oss-process=image%2Fformat%2Cwebp%2Fresize%2Cw_898%2Climit_0)
+
+
 
 
 
@@ -37,7 +39,7 @@
 
 **实际测试5000连接，启用批量推送，在cpu负载满的情况下，性能有较大提升，后面是开启批量推送**
 
-![image-20250405210004732](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405210004732.png)
+![image.png](https://cdn.nlark.com/yuque/0/2025/png/12466223/1743862923713-e1abd842-a62d-464a-9e51-fe707ed81b6c.png?x-oss-process=image%2Fformat%2Cwebp)
 
 #### 2.1启用压缩
 
@@ -45,7 +47,7 @@
 
 
 
-![image-20250405212352638](C:\Users\dengyongcai\AppData\Roaming\Typora\typora-user-images\image-20250405212352638.png)
+![image.png](https://cdn.nlark.com/yuque/0/2025/png/12466223/1743862955829-2e736239-5a7f-4978-8898-1a535fd4c82c.png?x-oss-process=image%2Fformat%2Cwebp%2Fresize%2Cw_898%2Climit_0)
 
 
 
