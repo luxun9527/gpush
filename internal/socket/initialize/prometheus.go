@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"github.com/luxun9527/gpush/internal/socket/stat"
+	"github.com/ikun2021/gpush/internal/socket/stat"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

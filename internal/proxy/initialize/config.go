@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"github.com/luxun9527/gpush/internal/proxy/global"
+	"github.com/ikun2021/gpush/internal/proxy/global"
 	"github.com/luxun9527/zlog"
 	"github.com/spf13/viper"
 	"log"

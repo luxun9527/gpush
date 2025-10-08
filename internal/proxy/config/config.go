@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/luxun9527/gpush/internal/pkg"
+	"github.com/ikun2021/gpush/internal/pkg"
 	"github.com/luxun9527/zlog"
 )
 

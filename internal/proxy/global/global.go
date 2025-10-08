@@ -1,7 +1,7 @@
 package global
 
 import (
-	"github.com/luxun9527/gpush/internal/proxy/config"
+	"github.com/ikun2021/gpush/internal/proxy/config"
 )
 
 var (

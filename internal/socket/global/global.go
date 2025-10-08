@@ -1,8 +1,8 @@
 package global
 
 import (
-	"github.com/luxun9527/gpush/internal/socket/config"
-	"github.com/luxun9527/gpush/internal/socket/stat"
+	"github.com/ikun2021/gpush/internal/socket/config"
+	"github.com/ikun2021/gpush/internal/socket/stat"
 )
 
 var (

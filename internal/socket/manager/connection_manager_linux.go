@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/luxun9527/gpush/internal/socket/global"
+	"github.com/ikun2021/gpush/internal/socket/global"
 	"hash/fnv"
 )
 

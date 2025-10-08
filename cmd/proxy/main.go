@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/luxun9527/gpush/internal/proxy/initialize"
+	"github.com/ikun2021/gpush/internal/proxy/initialize"
 )
 
 func main() {

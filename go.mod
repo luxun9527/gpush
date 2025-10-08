@@ -1,4 +1,4 @@
-module github.com/luxun9527/gpush
+module github.com/ikun2021/gpush
 
 go 1.20
 

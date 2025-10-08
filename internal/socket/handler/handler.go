@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/luxun9527/gpush/internal/socket/manager"
-	"github.com/luxun9527/gpush/internal/socket/model/request"
-	"github.com/luxun9527/gpush/internal/socket/model/response"
+	"github.com/ikun2021/gpush/internal/socket/manager"
+	"github.com/ikun2021/gpush/internal/socket/model/request"
+	"github.com/ikun2021/gpush/internal/socket/model/response"
 )
 
 // 不同的操作对应不同的策略

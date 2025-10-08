@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"github.com/luxun9527/gpush/internal/socket/global"
-	"github.com/luxun9527/gpush/internal/socket/initialize"
+	"github.com/ikun2021/gpush/internal/socket/global"
+	"github.com/ikun2021/gpush/internal/socket/initialize"
 	"github.com/luxun9527/zlog"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"

@@ -132,7 +132,7 @@ topic : 频道的名称，当你想推送给所有的时候为空。
 
 data : 具体的推送的内容，推送的数据要经过base64编码
 
-**grpc接口** github.com/luxun9527/gpush/proto
+**grpc接口** github.com/ikun2021/gpush/proto
 
 protobuf 格式
 

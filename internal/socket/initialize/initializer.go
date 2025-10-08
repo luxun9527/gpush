@@ -1,10 +1,10 @@
 package initialize
 
 import (
-	"github.com/luxun9527/gpush/internal/socket/global"
-	"github.com/luxun9527/gpush/internal/socket/manager"
-	"github.com/luxun9527/gpush/internal/socket/pull"
-	"github.com/luxun9527/gpush/internal/socket/server"
+	"github.com/ikun2021/gpush/internal/socket/global"
+	"github.com/ikun2021/gpush/internal/socket/manager"
+	"github.com/ikun2021/gpush/internal/socket/pull"
+	"github.com/ikun2021/gpush/internal/socket/server"
 	"github.com/luxun9527/zlog"
 )
 

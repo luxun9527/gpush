@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	"github.com/luxun9527/gpush/internal/socket/global"
-	"github.com/luxun9527/gpush/internal/socket/manager"
-	"github.com/luxun9527/gpush/internal/socket/model/request"
-	"github.com/luxun9527/gpush/internal/socket/model/response"
+	"github.com/ikun2021/gpush/internal/socket/global"
+	"github.com/ikun2021/gpush/internal/socket/manager"
+	"github.com/ikun2021/gpush/internal/socket/model/request"
+	"github.com/ikun2021/gpush/internal/socket/model/response"
 	"go.uber.org/zap"
 )
 

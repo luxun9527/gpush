@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	pb "github.com/luxun9527/gpush/proto"
+	pb "github.com/ikun2021/gpush/proto"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 	"log"

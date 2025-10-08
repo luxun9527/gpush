@@ -4,7 +4,7 @@ import (
 	"compress/flate"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsflate"
-	"github.com/luxun9527/gpush/internal/socket/model"
+	"github.com/ikun2021/gpush/internal/socket/model"
 	"io"
 	"log"
 	"net"

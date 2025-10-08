@@ -2,8 +2,8 @@ package initialize
 
 import (
 	"context"
-	"github.com/luxun9527/gpush/internal/proxy/global"
-	"github.com/luxun9527/gpush/tools"
+	"github.com/ikun2021/gpush/internal/proxy/global"
+	"github.com/ikun2021/gpush/tools"
 	"github.com/luxun9527/zlog"
 	"github.com/spf13/cast"
 	clientv3 "go.etcd.io/etcd/client/v3"
